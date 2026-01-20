@@ -18,6 +18,12 @@ const schema = {
   hasPromptedAutoStart: {
     type: 'boolean',
     default: false
+  },
+  ballSize: {
+    type: 'number',
+    default: 10,
+    minimum: 5,
+    maximum: 30
   }
 };
 
@@ -56,5 +62,13 @@ module.exports = {
 
   setHasPromptedAutoStart(value) {
     store.set('hasPromptedAutoStart', value);
+  },
+
+  getBallSize() {
+    return store.get('ballSize');
+  },
+
+  setBallSize(percentage) {
+    store.set('ballSize', percentage);
   }
 };

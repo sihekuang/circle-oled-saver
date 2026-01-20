@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('oledSaver', {
   // Overlay APIs
   dismissOverlay: () => ipcRenderer.invoke('dismiss-overlay'),
+  getBallSize: () => ipcRenderer.invoke('get-ball-size'),
 
   // Settings APIs
   getSettings: () => ipcRenderer.invoke('get-settings'),
