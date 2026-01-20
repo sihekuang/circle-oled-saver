@@ -1,0 +1,29 @@
+{
+  "name": "oled-saver",
+  "version": "1.0.0",
+  "description": "A cross-platform screensaver that plays YouTube videos to help reduce OLED burn-in",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
+  },
+  "keywords": [
+    "oled",
+    "screensaver",
+    "electron",
+    "youtube"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "desktop-idle": "^1.3.0",
+    "electron-store": "^8.2.0"
+  }
+}
