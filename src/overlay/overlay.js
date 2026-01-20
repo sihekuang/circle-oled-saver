@@ -37,19 +37,44 @@ class BouncingBall {
     this.x += this.speedX;
     this.y += this.speedY;
 
-    // Bounce off walls
-    if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-      this.speedX = -this.speedX;
-      this.hue = (this.hue + 30) % 360; // Change color on bounce
-    }
-    if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
-      this.speedY = -this.speedY;
+    // 30% chance to wrap through edges, 70% chance to bounce
+    const wrapChance = 0.3;
+
+    // Handle horizontal edges (based on ball center)
+    if (this.x < 0) {
+      // Went off left edge - wrap to right
+      this.x = canvas.width;
       this.hue = (this.hue + 30) % 360;
+    } else if (this.x > canvas.width) {
+      // Went off right edge - wrap to left
+      this.x = 0;
+      this.hue = (this.hue + 30) % 360;
+    } else if (this.x <= 0 || this.x >= canvas.width) {
+      if (Math.random() < wrapChance) {
+        // Let it continue through (will wrap on next frames)
+      } else {
+        this.speedX = -this.speedX;
+        this.hue = (this.hue + 30) % 360;
+      }
     }
 
-    // Keep in bounds
-    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
-    this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+    // Handle vertical edges (based on ball center)
+    if (this.y < 0) {
+      // Went off top edge - wrap to bottom
+      this.y = canvas.height;
+      this.hue = (this.hue + 30) % 360;
+    } else if (this.y > canvas.height) {
+      // Went off bottom edge - wrap to top
+      this.y = 0;
+      this.hue = (this.hue + 30) % 360;
+    } else if (this.y <= 0 || this.y >= canvas.height) {
+      if (Math.random() < wrapChance) {
+        // Let it continue through (will wrap on next frames)
+      } else {
+        this.speedY = -this.speedY;
+        this.hue = (this.hue + 30) % 360;
+      }
+    }
   }
 
   draw() {

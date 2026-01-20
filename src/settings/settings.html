@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
   <title>OLED Saver Settings</title>
   <link rel="stylesheet" href="settings.css">
 </head>
@@ -20,10 +19,11 @@
     </section>
 
     <section class="setting-group">
-      <label for="idle-timeout">
-        Idle timeout: <span id="timeout-value">5</span> minutes
-      </label>
-      <input type="range" id="idle-timeout" min="1" max="30" value="5">
+      <label for="idle-timeout">Idle timeout</label>
+      <div class="timeout-input">
+        <input type="range" id="idle-timeout" min="5" max="300" value="10">
+        <input type="number" id="timeout-value" min="5" max="300" value="10"> seconds
+      </div>
     </section>
 
     <section class="setting-group">
@@ -32,17 +32,6 @@
         <input type="checkbox" id="launch-at-login">
         <span class="toggle-slider"></span>
       </label>
-    </section>
-
-    <section class="setting-group">
-      <h2>Playlists</h2>
-      <div id="playlist-list"></div>
-
-      <div class="add-playlist">
-        <input type="text" id="playlist-name" placeholder="Name">
-        <input type="text" id="playlist-url" placeholder="YouTube URL">
-        <button id="add-playlist-btn">Add</button>
-      </div>
     </section>
   </div>
 

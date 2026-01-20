@@ -28,6 +28,7 @@ class WindowManager {
       transparent: true,
       hasShadow: false,
       focusable: false,
+      roundedCorners: false,
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
         contextIsolation: true,
@@ -52,36 +53,14 @@ class WindowManager {
   }
 
   setupOverlayIPC() {
-    // Remove existing handler if any
     ipcMain.removeHandler('dismiss-overlay');
-    ipcMain.removeHandler('video-ended');
-    ipcMain.removeHandler('get-next-playlist');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
     });
-
-    ipcMain.handle('video-ended', () => {
-      const nextPlaylist = config.getNextPlaylist();
-      if (nextPlaylist) {
-        this.overlayWindows.forEach((overlay, index) => {
-          if (!overlay.isDestroyed()) {
-            overlay.webContents.send('load-video', {
-              url: nextPlaylist.url,
-              displayIndex: index
-            });
-          }
-        });
-      }
-    });
-
-    ipcMain.handle('get-next-playlist', () => {
-      return config.getNextPlaylist();
-    });
   }
 
   dismissOverlays() {
-    // Fade out and destroy overlays
     this.overlayWindows.forEach(overlay => {
       if (!overlay.isDestroyed()) {
         overlay.webContents.send('fade-out');
@@ -114,7 +93,7 @@ class WindowManager {
 
     this.settingsWindow = new BrowserWindow({
       width: 500,
-      height: 600,
+      height: 400,
       resizable: false,
       minimizable: false,
       maximizable: false,
@@ -132,23 +111,18 @@ class WindowManager {
       this.settingsWindow = null;
     });
 
-    // Setup IPC handlers for settings
     this.setupSettingsIPC();
 
     return this.settingsWindow;
   }
 
   setupSettingsIPC() {
-    // Remove existing handlers
     ipcMain.removeHandler('get-settings');
     ipcMain.removeHandler('save-settings');
-    ipcMain.removeHandler('add-playlist');
-    ipcMain.removeHandler('remove-playlist');
 
     ipcMain.handle('get-settings', () => {
       return {
         idleTimeout: config.getIdleTimeout(),
-        playlists: config.getPlaylists(),
         enabled: config.isEnabled(),
         launchAtLogin: config.getLaunchAtLogin()
       };
@@ -163,23 +137,12 @@ class WindowManager {
       }
       if (settings.launchAtLogin !== undefined) {
         config.setLaunchAtLogin(settings.launchAtLogin);
-        // Update system auto-launch setting
         const { app } = require('electron');
         app.setLoginItemSettings({
           openAtLogin: settings.launchAtLogin
         });
       }
       return true;
-    });
-
-    ipcMain.handle('add-playlist', (event, { name, url }) => {
-      config.addPlaylist(name, url);
-      return config.getPlaylists();
-    });
-
-    ipcMain.handle('remove-playlist', (event, index) => {
-      config.removePlaylist(index);
-      return config.getPlaylists();
     });
   }
 
