@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 
 let animationId = null;
 let ball = null;
+let ballSizePercentage = 10; // Default value
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -26,11 +27,9 @@ class BouncingBall {
   }
 
   updateSize() {
-    // Ball size between 5% and 20% of the smaller dimension
+    // Ball size based on configured percentage of the smaller dimension
     const minDim = Math.min(canvas.width, canvas.height);
-    const minSize = minDim * 0.05;
-    const maxSize = minDim * 0.20;
-    this.radius = minSize + Math.random() * (maxSize - minSize);
+    this.radius = minDim * (ballSizePercentage / 100);
   }
 
   update() {
@@ -109,8 +108,13 @@ function animate() {
 }
 
 // Initialize
-ball = new BouncingBall();
-animate();
+async function init() {
+  ballSizePercentage = await window.oledSaver.getBallSize();
+  ball = new BouncingBall();
+  animate();
+}
+
+init();
 
 // Listen for IPC events
 window.oledSaver.onFadeOut(() => {

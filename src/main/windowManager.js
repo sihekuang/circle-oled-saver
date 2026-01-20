@@ -54,9 +54,14 @@ class WindowManager {
 
   setupOverlayIPC() {
     ipcMain.removeHandler('dismiss-overlay');
+    ipcMain.removeHandler('get-ball-size');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
+    });
+
+    ipcMain.handle('get-ball-size', () => {
+      return config.getBallSize();
     });
   }
 
@@ -94,9 +99,8 @@ class WindowManager {
     this.settingsWindow = new BrowserWindow({
       width: 500,
       height: 400,
-      resizable: false,
-      minimizable: false,
-      maximizable: false,
+      minWidth: 400,
+      minHeight: 300,
       title: 'OLED Saver Settings',
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
@@ -124,7 +128,8 @@ class WindowManager {
       return {
         idleTimeout: config.getIdleTimeout(),
         enabled: config.isEnabled(),
-        launchAtLogin: config.getLaunchAtLogin()
+        launchAtLogin: config.getLaunchAtLogin(),
+        ballSize: config.getBallSize()
       };
     });
 
@@ -141,6 +146,9 @@ class WindowManager {
         app.setLoginItemSettings({
           openAtLogin: settings.launchAtLogin
         });
+      }
+      if (settings.ballSize !== undefined) {
+        config.setBallSize(settings.ballSize);
       }
       return true;
     });
