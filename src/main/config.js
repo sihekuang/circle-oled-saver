@@ -22,7 +22,7 @@ const schema = {
   ballSize: {
     type: 'number',
     default: 10,
-    minimum: 5,
+    minimum: 1,
     maximum: 30
   }
 };

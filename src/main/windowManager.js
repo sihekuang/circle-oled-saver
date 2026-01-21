@@ -29,6 +29,7 @@ class WindowManager {
       hasShadow: false,
       focusable: false,
       roundedCorners: false,
+      show: false,
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
         contextIsolation: true,
@@ -40,6 +41,11 @@ class WindowManager {
     overlay.setIgnoreMouseEvents(true, { forward: true });
 
     overlay.loadFile(path.join(__dirname, '../overlay/overlay.html'));
+
+    // Show without focusing to avoid bringing settings window forward
+    overlay.once('ready-to-show', () => {
+      overlay.showInactive();
+    });
 
     // Prevent the window from being closed by the user
     overlay.on('close', (e) => {
