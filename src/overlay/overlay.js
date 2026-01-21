@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d');
 let animationId = null;
 let ball = null;
 let ballSizePercentage = 10; // Default value
+let ballOpacityPercentage = 100; // Default value
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -23,6 +24,7 @@ class BouncingBall {
     this.y = canvas.height / 2;
     this.speedX = 4;
     this.speedY = 3;
+    this.maxSpeed = 8;
     this.hue = Math.random() * 360;
   }
 
@@ -30,6 +32,15 @@ class BouncingBall {
     // Ball size based on configured percentage of the smaller dimension
     const minDim = Math.min(canvas.width, canvas.height);
     this.radius = minDim * (ballSizePercentage / 100);
+  }
+
+  limitSpeed() {
+    const currentSpeed = Math.sqrt(this.speedX ** 2 + this.speedY ** 2);
+    if (currentSpeed > this.maxSpeed) {
+      const scale = this.maxSpeed / currentSpeed;
+      this.speedX *= scale;
+      this.speedY *= scale;
+    }
   }
 
   update() {
@@ -52,7 +63,10 @@ class BouncingBall {
       if (Math.random() < wrapChance) {
         // Let it continue through (will wrap on next frames)
       } else {
+        // Bounce with random angle variation
         this.speedX = -this.speedX;
+        this.speedY += (Math.random() - 0.5) * 2;
+        this.limitSpeed();
         this.hue = (this.hue + 30) % 360;
       }
     }
@@ -70,14 +84,18 @@ class BouncingBall {
       if (Math.random() < wrapChance) {
         // Let it continue through (will wrap on next frames)
       } else {
+        // Bounce with random angle variation
         this.speedY = -this.speedY;
+        this.speedX += (Math.random() - 0.5) * 2;
+        this.limitSpeed();
         this.hue = (this.hue + 30) % 360;
       }
     }
   }
 
   draw() {
-    // Draw ball with gradient
+    // Draw ball with gradient and opacity
+    const opacity = ballOpacityPercentage / 100;
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
       this.y - this.radius * 0.3,
@@ -86,8 +104,8 @@ class BouncingBall {
       this.y,
       this.radius
     );
-    gradient.addColorStop(0, `hsl(${this.hue}, 80%, 70%)`);
-    gradient.addColorStop(1, `hsl(${this.hue}, 80%, 40%)`);
+    gradient.addColorStop(0, `hsla(${this.hue}, 80%, 70%, ${opacity})`);
+    gradient.addColorStop(1, `hsla(${this.hue}, 80%, 40%, ${opacity})`);
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -110,6 +128,7 @@ function animate() {
 // Initialize
 async function init() {
   ballSizePercentage = await window.oledSaver.getBallSize();
+  ballOpacityPercentage = await window.oledSaver.getBallOpacity();
   ball = new BouncingBall();
   animate();
 }

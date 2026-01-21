@@ -61,6 +61,7 @@ class WindowManager {
   setupOverlayIPC() {
     ipcMain.removeHandler('dismiss-overlay');
     ipcMain.removeHandler('get-ball-size');
+    ipcMain.removeHandler('get-ball-opacity');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
@@ -68,6 +69,10 @@ class WindowManager {
 
     ipcMain.handle('get-ball-size', () => {
       return config.getBallSize();
+    });
+
+    ipcMain.handle('get-ball-opacity', () => {
+      return config.getBallOpacity();
     });
   }
 
@@ -135,7 +140,8 @@ class WindowManager {
         idleTimeout: config.getIdleTimeout(),
         enabled: config.isEnabled(),
         launchAtLogin: config.getLaunchAtLogin(),
-        ballSize: config.getBallSize()
+        ballSize: config.getBallSize(),
+        ballOpacity: config.getBallOpacity()
       };
     });
 
@@ -155,6 +161,9 @@ class WindowManager {
       }
       if (settings.ballSize !== undefined) {
         config.setBallSize(settings.ballSize);
+      }
+      if (settings.ballOpacity !== undefined) {
+        config.setBallOpacity(settings.ballOpacity);
       }
       return true;
     });

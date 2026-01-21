@@ -3,6 +3,8 @@ const idleTimeoutSlider = document.getElementById('idle-timeout');
 const timeoutValueInput = document.getElementById('timeout-value');
 const ballSizeSlider = document.getElementById('ball-size');
 const ballSizeValueInput = document.getElementById('ball-size-value');
+const ballOpacitySlider = document.getElementById('ball-opacity');
+const ballOpacityValueInput = document.getElementById('ball-opacity-value');
 const launchAtLoginCheckbox = document.getElementById('launch-at-login');
 
 async function loadSettings() {
@@ -16,6 +18,9 @@ async function loadSettings() {
   ballSizeSlider.value = settings.ballSize;
   ballSizeValueInput.value = settings.ballSize;
 
+  ballOpacitySlider.value = settings.ballOpacity;
+  ballOpacityValueInput.value = settings.ballOpacity;
+
   launchAtLoginCheckbox.checked = settings.launchAtLogin;
 }
 
@@ -27,10 +32,17 @@ async function saveTimeout(seconds) {
 }
 
 async function saveBallSize(percentage) {
-  percentage = Math.max(5, Math.min(30, parseInt(percentage) || 10));
+  percentage = Math.max(1, Math.min(30, parseInt(percentage) || 10));
   ballSizeSlider.value = percentage;
   ballSizeValueInput.value = percentage;
   await window.oledSaver.saveSettings({ ballSize: percentage });
+}
+
+async function saveBallOpacity(percentage) {
+  percentage = Math.max(10, Math.min(100, parseInt(percentage) || 100));
+  ballOpacitySlider.value = percentage;
+  ballOpacityValueInput.value = percentage;
+  await window.oledSaver.saveSettings({ ballOpacity: percentage });
 }
 
 // Event listeners
@@ -60,6 +72,18 @@ ballSizeSlider.addEventListener('change', async () => {
 
 ballSizeValueInput.addEventListener('change', async () => {
   await saveBallSize(ballSizeValueInput.value);
+});
+
+ballOpacitySlider.addEventListener('input', () => {
+  ballOpacityValueInput.value = ballOpacitySlider.value;
+});
+
+ballOpacitySlider.addEventListener('change', async () => {
+  await saveBallOpacity(ballOpacitySlider.value);
+});
+
+ballOpacityValueInput.addEventListener('change', async () => {
+  await saveBallOpacity(ballOpacityValueInput.value);
 });
 
 launchAtLoginCheckbox.addEventListener('change', async () => {
