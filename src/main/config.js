@@ -24,6 +24,12 @@ const schema = {
     default: 10,
     minimum: 1,
     maximum: 30
+  },
+  ballOpacity: {
+    type: 'number',
+    default: 100,
+    minimum: 10,
+    maximum: 100
   }
 };
 
@@ -70,5 +76,13 @@ module.exports = {
 
   setBallSize(percentage) {
     store.set('ballSize', percentage);
+  },
+
+  getBallOpacity() {
+    return store.get('ballOpacity');
+  },
+
+  setBallOpacity(percentage) {
+    store.set('ballOpacity', percentage);
   }
 };
