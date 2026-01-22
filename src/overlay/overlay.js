@@ -192,14 +192,20 @@ class BouncingBall {
 
 // Initialize content providers and rotator
 async function initContentProviders() {
+  console.log('[Overlay] initContentProviders started');
+
   // Import provider classes (using script tags in HTML)
   const ClockProvider = window.ClockProvider;
   const StockProvider = window.StockProvider;
   const SystemInfoProvider = window.SystemInfoProvider;
   const ContentRotator = window.ContentRotator;
 
+  console.log('[Overlay] Provider classes loaded:', { ClockProvider, StockProvider, SystemInfoProvider, ContentRotator });
+
   // Get content settings from config
+  console.log('[Overlay] Fetching content settings...');
   const contentSettings = await window.oledSaver.getContentSettings();
+  console.log('[Overlay] Content settings:', contentSettings);
 
   const providers = [];
 
@@ -246,16 +252,29 @@ function animate() {
 
 // Initialize
 async function init() {
-  ballSizePercentage = await window.oledSaver.getBallSize();
-  ballOpacityPercentage = await window.oledSaver.getBallOpacity();
-  ball = new BouncingBall();
+  console.log('[Overlay] init() started');
+  console.log('[Overlay] window.oledSaver available:', !!window.oledSaver);
 
-  // Initialize content providers
-  await initContentProviders();
+  try {
+    ballSizePercentage = await window.oledSaver.getBallSize();
+    ballOpacityPercentage = await window.oledSaver.getBallOpacity();
+    console.log('[Overlay] Ball size/opacity loaded:', { ballSizePercentage, ballOpacityPercentage });
 
-  animate();
+    ball = new BouncingBall();
+    console.log('[Overlay] BouncingBall created');
+
+    // Initialize content providers
+    await initContentProviders();
+    console.log('[Overlay] Content providers initialized');
+
+    animate();
+    console.log('[Overlay] Animation started');
+  } catch (error) {
+    console.error('[Overlay] Error during init:', error);
+  }
 }
 
+console.log('[Overlay] Script loaded, calling init()');
 init();
 
 // Listen for IPC events
