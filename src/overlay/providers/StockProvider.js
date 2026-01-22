@@ -1,8 +1,6 @@
 // src/overlay/providers/StockProvider.js
-// In browser context, ContentProvider is loaded from window
-const ContentProvider = (typeof window !== 'undefined') ? window.ContentProvider : require('./ContentProvider');
 
-class StockProvider extends ContentProvider {
+class StockProvider extends window.ContentProvider {
   constructor(config = {}) {
     super(config);
     this.symbols = config.symbols || ['AAPL', 'GOOGL', 'TSLA'];

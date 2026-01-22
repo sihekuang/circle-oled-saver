@@ -1,8 +1,6 @@
 // src/overlay/providers/SystemInfoProvider.js
-// In browser context, ContentProvider is loaded from window
-const ContentProvider = (typeof window !== 'undefined') ? window.ContentProvider : require('./ContentProvider');
 
-class SystemInfoProvider extends ContentProvider {
+class SystemInfoProvider extends window.ContentProvider {
   constructor(config = {}) {
     super(config);
   }

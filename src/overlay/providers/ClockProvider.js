@@ -1,8 +1,6 @@
 // src/overlay/providers/ClockProvider.js
-// In browser context, ContentProvider is loaded from window
-const ContentProvider = (typeof window !== 'undefined') ? window.ContentProvider : require('./ContentProvider');
 
-class ClockProvider extends ContentProvider {
+class ClockProvider extends window.ContentProvider {
   constructor(config = {}) {
     super(config);
   }
