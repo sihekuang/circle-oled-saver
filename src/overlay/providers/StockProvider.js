@@ -50,9 +50,9 @@ class StockProvider extends window.ContentProvider {
       const symbol = this.symbols[i];
       try {
         await this.fetchStockQuote(symbol);
-        // Add 500ms delay between requests to avoid rate limiting
+        // Add 3 second delay between requests to avoid aggressive rate limiting
         if (i < this.symbols.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       } catch (err) {
         console.warn(`Failed to fetch ${symbol}:`, err);
@@ -90,7 +90,7 @@ class StockProvider extends window.ContentProvider {
   }
 
   getRefreshInterval() {
-    return 120000; // Fetch every 2 minutes
+    return 300000; // Fetch every 5 minutes to reduce rate limiting
   }
 }
 
