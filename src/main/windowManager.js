@@ -1,12 +1,40 @@
 const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 const config = require('./config');
+const os = require('os');
 
 class WindowManager {
   constructor() {
     this.overlayWindows = [];
     this.settingsWindow = null;
     this.onDismiss = null;
+    this.previousCpuInfo = null;
+  }
+
+  // Calculate system-wide CPU usage
+  getCpuUsagePercent() {
+    const cpus = os.cpus();
+    let totalIdle = 0;
+    let totalTick = 0;
+
+    cpus.forEach(cpu => {
+      for (let type in cpu.times) {
+        totalTick += cpu.times[type];
+      }
+      totalIdle += cpu.times.idle;
+    });
+
+    if (!this.previousCpuInfo) {
+      this.previousCpuInfo = { totalIdle, totalTick };
+      return 0; // First call, need baseline
+    }
+
+    const idleDiff = totalIdle - this.previousCpuInfo.totalIdle;
+    const totalDiff = totalTick - this.previousCpuInfo.totalTick;
+    const cpuPercent = 100 - ~~(100 * idleDiff / totalDiff);
+
+    this.previousCpuInfo = { totalIdle, totalTick };
+    return cpuPercent;
   }
 
   createOverlays(onDismiss, debugMode = false) {
@@ -93,14 +121,16 @@ class WindowManager {
     });
 
     ipcMain.handle('get-system-info', async () => {
-      const cpuUsage = process.getCPUUsage();
+      const cpuPercent = this.getCpuUsagePercent();
       const memInfo = process.getSystemMemoryInfo();
 
-      console.log('[WindowManager] System info - CPU:', cpuUsage, 'Memory:', memInfo);
+      const memPercent = Math.round(((memInfo.total - memInfo.free) / memInfo.total) * 100);
+
+      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', memPercent, '%');
 
       return {
-        cpuPercent: Math.round(cpuUsage.percentCPUUsage),
-        memPercent: Math.round(((memInfo.total - memInfo.free) / memInfo.total) * 100)
+        cpuPercent: Math.round(cpuPercent),
+        memPercent: memPercent
       };
     });
   }
