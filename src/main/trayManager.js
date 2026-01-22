@@ -9,9 +9,10 @@ class TrayManager {
     this.onQuitClick = null;
   }
 
-  create({ onSettingsClick, onQuitClick }) {
+  create({ onSettingsClick, onQuitClick, onTestOverlayClick }) {
     this.onSettingsClick = onSettingsClick;
     this.onQuitClick = onQuitClick;
+    this.onTestOverlayClick = onTestOverlayClick;
 
     const iconPath = path.join(__dirname, '../../assets/iconTemplate.png');
 
@@ -84,6 +85,14 @@ class TrayManager {
         }
       },
       { type: 'separator' },
+      {
+        label: 'Test Overlay (Debug)',
+        click: () => {
+          if (this.onTestOverlayClick) {
+            this.onTestOverlayClick();
+          }
+        }
+      },
       {
         label: 'Settings...',
         click: () => {

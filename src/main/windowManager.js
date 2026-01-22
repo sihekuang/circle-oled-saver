@@ -9,8 +9,9 @@ class WindowManager {
     this.onDismiss = null;
   }
 
-  createOverlays(onDismiss) {
+  createOverlays(onDismiss, debugMode = false) {
     this.onDismiss = onDismiss;
+    this.debugMode = debugMode;
 
     // Get all displays to show overlay on every monitor
     const displays = screen.getAllDisplays();
@@ -49,8 +50,11 @@ class WindowManager {
       // Show without focusing to avoid bringing settings window forward
       overlay.once('ready-to-show', () => {
         overlay.showInactive();
-        // Open DevTools to debug
-        overlay.webContents.openDevTools({ mode: 'detach' });
+        // Open DevTools in debug mode
+        if (debugMode) {
+          overlay.webContents.openDevTools({ mode: 'detach' });
+          console.log('[WindowManager] Debug mode: DevTools opened, auto-dismiss disabled');
+        }
       });
 
       // Prevent the window from being closed by the user

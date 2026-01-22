@@ -21,6 +21,17 @@ app.on('ready', async () => {
     onSettingsClick: () => {
       windowManager.createSettingsWindow();
     },
+    onTestOverlayClick: () => {
+      console.log('[Main] Test overlay triggered from menu');
+      // Temporarily stop idle monitoring
+      idleMonitor.stop();
+      // Create overlay that won't auto-dismiss
+      windowManager.createOverlays(() => {
+        console.log('[Main] Test overlay dismissed');
+        // Restart idle monitoring
+        idleMonitor.start();
+      }, true); // Pass debug flag
+    },
     onQuitClick: () => {
       cleanup();
       app.quit();

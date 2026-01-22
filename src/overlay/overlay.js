@@ -288,6 +288,14 @@ async function init() {
 console.log('[Overlay] Script loaded, calling init()');
 init();
 
+// Listen for keyboard events to dismiss (for debug mode)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' || e.key === ' ') {
+    console.log('[Overlay] Keyboard dismiss triggered');
+    window.oledSaver.dismissOverlay();
+  }
+});
+
 // Listen for IPC events
 window.oledSaver.onFadeOut(() => {
   document.getElementById('container').classList.add('fade-out');
