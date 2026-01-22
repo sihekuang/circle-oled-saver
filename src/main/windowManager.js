@@ -49,6 +49,8 @@ class WindowManager {
       // Show without focusing to avoid bringing settings window forward
       overlay.once('ready-to-show', () => {
         overlay.showInactive();
+        // Open DevTools to debug
+        overlay.webContents.openDevTools({ mode: 'detach' });
       });
 
       // Prevent the window from being closed by the user
