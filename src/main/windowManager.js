@@ -124,13 +124,16 @@ class WindowManager {
       const cpuPercent = this.getCpuUsagePercent();
       const memInfo = process.getSystemMemoryInfo();
 
-      const memPercent = Math.round(((memInfo.total - memInfo.free) / memInfo.total) * 100);
+      // Convert KB to GB
+      const totalGB = (memInfo.total / 1024 / 1024).toFixed(1);
+      const freeGB = (memInfo.free / 1024 / 1024).toFixed(1);
 
-      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', memPercent, '%');
+      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', freeGB, 'GB free of', totalGB, 'GB');
 
       return {
         cpuPercent: Math.round(cpuPercent),
-        memPercent: memPercent
+        totalMemoryGB: totalGB,
+        freeMemoryGB: freeGB
       };
     });
   }

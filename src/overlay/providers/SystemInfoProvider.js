@@ -10,7 +10,7 @@ class SystemInfoProvider extends window.ContentProvider {
       // Get real system info via IPC
       const systemInfo = await window.oledSaver.getSystemInfo();
 
-      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.memPercent}%`;
+      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.freeMemoryGB}/${systemInfo.totalMemoryGB} GB`;
 
       // Battery (if available)
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
@@ -35,7 +35,7 @@ class SystemInfoProvider extends window.ContentProvider {
       console.error('SystemInfoProvider fetch error:', err);
       this.cachedData = {
         icon: '📊',
-        text: '⚙️ N/A  💾 N/A'
+        text: '⚙️ N/A  💾 N/A GB'
       };
     }
   }
