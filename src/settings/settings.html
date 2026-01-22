@@ -10,45 +10,115 @@
   <div class="container">
     <h1>OLED Saver Settings</h1>
 
-    <section class="setting-group">
-      <label class="toggle-label">
-        <span>Enable OLED Saver</span>
-        <input type="checkbox" id="enabled">
-        <span class="toggle-slider"></span>
-      </label>
-    </section>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="general">General</button>
+      <button class="tab-btn" data-tab="content">Content</button>
+    </div>
 
-    <section class="setting-group">
-      <label for="idle-timeout">Idle timeout</label>
-      <div class="timeout-input">
-        <input type="range" id="idle-timeout" min="5" max="300" value="10">
-        <input type="number" id="timeout-value" min="5" max="300" value="10"> seconds
+    <div id="general-tab" class="tab-content active">
+      <section class="setting-group">
+        <label class="toggle-label">
+          <span>Enable OLED Saver</span>
+          <input type="checkbox" id="enabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </section>
+
+      <section class="setting-group">
+        <label for="idle-timeout">Idle timeout</label>
+        <div class="timeout-input">
+          <input type="range" id="idle-timeout" min="5" max="300" value="10">
+          <input type="number" id="timeout-value" min="5" max="300" value="10"> seconds
+        </div>
+      </section>
+
+      <section class="setting-group">
+        <label for="ball-size">Circle size</label>
+        <div class="timeout-input">
+          <input type="range" id="ball-size" min="1" max="30" value="10">
+          <input type="number" id="ball-size-value" min="1" max="30" value="10"> %
+        </div>
+      </section>
+
+      <section class="setting-group">
+        <label for="ball-opacity">Circle opacity</label>
+        <div class="timeout-input">
+          <input type="range" id="ball-opacity" min="10" max="100" value="100">
+          <input type="number" id="ball-opacity-value" min="10" max="100" value="100"> %
+        </div>
+      </section>
+
+      <section class="setting-group">
+        <label class="toggle-label">
+          <span>Start at login</span>
+          <input type="checkbox" id="launch-at-login">
+          <span class="toggle-slider"></span>
+        </label>
+      </section>
+    </div>
+
+    <div id="content-tab" class="tab-content">
+      <div class="setting-group">
+        <label class="setting-label">
+          <input type="checkbox" id="content-rotation-enabled">
+          <span>Enable content rotation</span>
+        </label>
       </div>
-    </section>
 
-    <section class="setting-group">
-      <label for="ball-size">Circle size</label>
-      <div class="timeout-input">
-        <input type="range" id="ball-size" min="1" max="30" value="10">
-        <input type="number" id="ball-size-value" min="1" max="30" value="10"> %
+      <div class="setting-group">
+        <label for="rotation-interval">Rotation interval (seconds)</label>
+        <input type="range" id="rotation-interval" min="5" max="60" step="5">
+        <span id="rotation-interval-value">10s</span>
       </div>
-    </section>
 
-    <section class="setting-group">
-      <label for="ball-opacity">Circle opacity</label>
-      <div class="timeout-input">
-        <input type="range" id="ball-opacity" min="10" max="100" value="100">
-        <input type="number" id="ball-opacity-value" min="10" max="100" value="100"> %
+      <div class="setting-group">
+        <h3>Enabled Content Types</h3>
+        <label class="setting-label">
+          <input type="checkbox" id="provider-clock" value="clock">
+          <span>🕐 Clock</span>
+        </label>
+        <label class="setting-label">
+          <input type="checkbox" id="provider-stocks" value="stocks">
+          <span>📈 Stock Ticker</span>
+        </label>
+        <label class="setting-label">
+          <input type="checkbox" id="provider-system" value="system">
+          <span>📊 System Info</span>
+        </label>
       </div>
-    </section>
 
-    <section class="setting-group">
-      <label class="toggle-label">
-        <span>Start at login</span>
-        <input type="checkbox" id="launch-at-login">
-        <span class="toggle-slider"></span>
-      </label>
-    </section>
+      <div class="setting-group">
+        <h3>Clock Settings</h3>
+        <label for="clock-bg-color">Background Color</label>
+        <input type="color" id="clock-bg-color" value="#1a1a2e">
+        <label class="setting-label">
+          <input type="checkbox" id="clock-24hour">
+          <span>24-hour format</span>
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <h3>Stock Ticker Settings</h3>
+        <label for="stock-symbols">Stock Symbols (comma-separated)</label>
+        <input type="text" id="stock-symbols" placeholder="AAPL, GOOGL, TSLA">
+        <label for="stock-bg-color">Background Color</label>
+        <input type="color" id="stock-bg-color" value="#1a1a2e">
+        <label class="setting-label">
+          <input type="checkbox" id="stock-auto-color">
+          <span>Auto-color based on gain/loss</span>
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <h3>System Info Settings</h3>
+        <label for="system-bg-color">Background Color</label>
+        <input type="color" id="system-bg-color" value="#1a1a2e">
+        <label class="setting-label">
+          <input type="checkbox" id="system-show-battery">
+          <span>Show battery status (laptops)</span>
+        </label>
+      </div>
+    </div>
   </div>
 
   <script src="settings.js"></script>
