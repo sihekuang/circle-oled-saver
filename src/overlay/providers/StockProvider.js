@@ -53,15 +53,19 @@ class StockProvider extends window.ContentProvider {
   }
 
   async fetchAllStocks() {
-    const promises = this.symbols.map(symbol => this.fetchStockQuote(symbol));
-    const results = await Promise.allSettled(promises);
-
-    // Log any failures
-    results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        console.warn(`Failed to fetch ${this.symbols[index]}:`, result.reason);
+    // Fetch stocks sequentially with delay to avoid rate limiting
+    for (let i = 0; i < this.symbols.length; i++) {
+      const symbol = this.symbols[i];
+      try {
+        await this.fetchStockQuote(symbol);
+        // Add 500ms delay between requests to avoid rate limiting
+        if (i < this.symbols.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (err) {
+        console.warn(`Failed to fetch ${symbol}:`, err);
       }
-    });
+    }
   }
 
   async fetchStockQuote(symbol) {
