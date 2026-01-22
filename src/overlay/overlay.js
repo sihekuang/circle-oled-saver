@@ -3,7 +3,8 @@ const ctx = canvas.getContext('2d');
 
 let animationId = null;
 let ball = null;
-let ballSizePercentage = 10; // Default value
+let ballSizeMode = 'percentage'; // 'pixels' or 'percentage'
+let ballSizeValue = 10; // Value depends on mode
 let ballOpacityPercentage = 100; // Default value
 let ballSpeedPercentage = 100; // Default value
 
@@ -32,9 +33,14 @@ class BouncingBall {
   }
 
   updateSize() {
-    // Ball size based on configured percentage of the smaller dimension
-    const minDim = Math.min(canvas.width, canvas.height);
-    this.radius = minDim * (ballSizePercentage / 100);
+    if (ballSizeMode === 'pixels') {
+      // Ball size in pixels
+      this.radius = ballSizeValue;
+    } else {
+      // Ball size as percentage of smaller dimension
+      const minDim = Math.min(canvas.width, canvas.height);
+      this.radius = minDim * (ballSizeValue / 100);
+    }
   }
 
   limitSpeed() {
@@ -286,10 +292,11 @@ async function init() {
   console.log('[Overlay] window.oledSaver available:', !!window.oledSaver);
 
   try {
-    ballSizePercentage = await window.oledSaver.getBallSize();
+    ballSizeMode = await window.oledSaver.getBallSizeMode();
+    ballSizeValue = await window.oledSaver.getBallSize();
     ballOpacityPercentage = await window.oledSaver.getBallOpacity();
     ballSpeedPercentage = await window.oledSaver.getBallSpeed();
-    console.log('[Overlay] Ball settings loaded:', { ballSizePercentage, ballOpacityPercentage, ballSpeedPercentage });
+    console.log('[Overlay] Ball settings loaded:', { ballSizeMode, ballSizeValue, ballOpacityPercentage, ballSpeedPercentage });
 
     // Initialize background provider (animated for OLED burn-in prevention)
     window.backgroundProvider = new AnimatedBackgroundProvider({

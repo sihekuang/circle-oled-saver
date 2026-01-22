@@ -1,8 +1,10 @@
 const enabledCheckbox = document.getElementById('enabled');
 const idleTimeoutSlider = document.getElementById('idle-timeout');
 const timeoutValueInput = document.getElementById('timeout-value');
+const ballSizeModeRadios = document.querySelectorAll('input[name="ball-size-mode"]');
 const ballSizeSlider = document.getElementById('ball-size');
 const ballSizeValueInput = document.getElementById('ball-size-value');
+const ballSizeUnit = document.getElementById('ball-size-unit');
 const ballOpacitySlider = document.getElementById('ball-opacity');
 const ballOpacityValueInput = document.getElementById('ball-opacity-value');
 const ballSpeedSlider = document.getElementById('ball-speed');
@@ -16,6 +18,13 @@ async function loadSettings() {
 
   idleTimeoutSlider.value = settings.idleTimeout;
   timeoutValueInput.value = settings.idleTimeout;
+
+  // Set ball size mode
+  const mode = settings.ballSizeMode || 'percentage';
+  ballSizeModeRadios.forEach(radio => {
+    radio.checked = radio.value === mode;
+  });
+  updateBallSizeControls(mode);
 
   ballSizeSlider.value = settings.ballSize;
   ballSizeValueInput.value = settings.ballSize;
@@ -61,11 +70,34 @@ async function saveTimeout(seconds) {
   await window.oledSaver.saveSettings({ idleTimeout: seconds });
 }
 
-async function saveBallSize(percentage) {
-  percentage = Math.max(1, Math.min(30, parseInt(percentage) || 10));
-  ballSizeSlider.value = percentage;
-  ballSizeValueInput.value = percentage;
-  await window.oledSaver.saveSettings({ ballSize: percentage });
+function updateBallSizeControls(mode) {
+  if (mode === 'pixels') {
+    ballSizeSlider.min = 50;
+    ballSizeSlider.max = 500;
+    ballSizeValueInput.min = 50;
+    ballSizeValueInput.max = 500;
+    ballSizeUnit.textContent = 'px';
+  } else {
+    ballSizeSlider.min = 1;
+    ballSizeSlider.max = 30;
+    ballSizeValueInput.min = 1;
+    ballSizeValueInput.max = 30;
+    ballSizeUnit.textContent = '%';
+  }
+}
+
+async function saveBallSize(value) {
+  const mode = document.querySelector('input[name="ball-size-mode"]:checked').value;
+
+  if (mode === 'pixels') {
+    value = Math.max(50, Math.min(500, parseInt(value) || 100));
+  } else {
+    value = Math.max(1, Math.min(30, parseInt(value) || 10));
+  }
+
+  ballSizeSlider.value = value;
+  ballSizeValueInput.value = value;
+  await window.oledSaver.saveSettings({ ballSize: value });
 }
 
 async function saveBallOpacity(percentage) {
@@ -131,6 +163,20 @@ idleTimeoutSlider.addEventListener('change', async () => {
 
 timeoutValueInput.addEventListener('change', async () => {
   await saveTimeout(timeoutValueInput.value);
+});
+
+ballSizeModeRadios.forEach(radio => {
+  radio.addEventListener('change', async () => {
+    const mode = radio.value;
+    updateBallSizeControls(mode);
+
+    // Reset to default value for the new mode
+    const defaultValue = mode === 'pixels' ? 100 : 10;
+    ballSizeSlider.value = defaultValue;
+    ballSizeValueInput.value = defaultValue;
+
+    await window.oledSaver.saveSettings({ ballSizeMode: mode, ballSize: defaultValue });
+  });
 });
 
 ballSizeSlider.addEventListener('input', () => {

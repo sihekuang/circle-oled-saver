@@ -72,6 +72,7 @@ class WindowManager {
 
   setupOverlayIPC() {
     ipcMain.removeHandler('dismiss-overlay');
+    ipcMain.removeHandler('get-ball-size-mode');
     ipcMain.removeHandler('get-ball-size');
     ipcMain.removeHandler('get-ball-opacity');
     ipcMain.removeHandler('get-ball-speed');
@@ -80,6 +81,10 @@ class WindowManager {
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
+    });
+
+    ipcMain.handle('get-ball-size-mode', () => {
+      return config.getBallSizeMode();
     });
 
     ipcMain.handle('get-ball-size', () => {
@@ -196,6 +201,7 @@ class WindowManager {
         idleTimeout: config.getIdleTimeout(),
         enabled: config.isEnabled(),
         launchAtLogin: config.getLaunchAtLogin(),
+        ballSizeMode: config.getBallSizeMode(),
         ballSize: config.getBallSize(),
         ballOpacity: config.getBallOpacity(),
         ballSpeed: config.getBallSpeed(),
@@ -216,6 +222,9 @@ class WindowManager {
         app.setLoginItemSettings({
           openAtLogin: settings.launchAtLogin
         });
+      }
+      if (settings.ballSizeMode !== undefined) {
+        config.setBallSizeMode(settings.ballSizeMode);
       }
       if (settings.ballSize !== undefined) {
         config.setBallSize(settings.ballSize);

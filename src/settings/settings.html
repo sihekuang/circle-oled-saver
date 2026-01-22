@@ -34,9 +34,19 @@
 
       <section class="setting-group">
         <label for="ball-size">Circle size</label>
+        <div style="margin-bottom: 8px;">
+          <label class="setting-label">
+            <input type="radio" name="ball-size-mode" value="percentage" checked>
+            <span>Percentage of screen</span>
+          </label>
+          <label class="setting-label">
+            <input type="radio" name="ball-size-mode" value="pixels">
+            <span>Fixed pixels</span>
+          </label>
+        </div>
         <div class="timeout-input">
           <input type="range" id="ball-size" min="1" max="30" value="10">
-          <input type="number" id="ball-size-value" min="1" max="30" value="10"> %
+          <input type="number" id="ball-size-value" min="1" max="30" value="10"> <span id="ball-size-unit">%</span>
         </div>
       </section>
 
