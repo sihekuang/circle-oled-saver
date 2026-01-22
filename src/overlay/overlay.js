@@ -94,7 +94,22 @@ class BouncingBall {
   }
 
   draw() {
-    // Draw ball with gradient and opacity
+    // Get content from current provider
+    const content = window.contentRotator ?
+      window.contentRotator.getCurrentProvider()?.getData() :
+      null;
+
+    if (content) {
+      // Draw circle with content
+      this.drawWithContent(content);
+    } else {
+      // Fallback to original gradient ball
+      this.drawGradient();
+    }
+  }
+
+  drawGradient() {
+    // Original gradient drawing code
     const opacity = ballOpacityPercentage / 100;
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
@@ -111,6 +126,108 @@ class BouncingBall {
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = gradient;
     ctx.fill();
+  }
+
+  drawWithContent(content) {
+    const opacity = ballOpacityPercentage / 100;
+
+    // Draw circle background
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+
+    // Parse background color and add opacity
+    const bgColor = this.addOpacity(content.backgroundColor, opacity);
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+
+    // Add subtle shadow/border
+    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw icon and text
+    this.drawContentText(content, opacity);
+  }
+
+  addOpacity(hexColor, opacity) {
+    // Convert hex to rgba with opacity
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  drawContentText(content, opacity) {
+    ctx.save();
+
+    // Set text properties
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Icon size and position (top of circle)
+    const iconSize = this.radius * 0.25;
+    ctx.font = `${iconSize}px Arial`;
+    const iconY = this.y - this.radius * 0.3;
+    ctx.fillText(content.icon, this.x, iconY);
+
+    // Text size and position (below icon)
+    const textSize = this.radius * 0.15;
+    ctx.font = `bold ${textSize}px Arial`;
+
+    // Handle multi-line text
+    const lines = content.text.split('\n');
+    const lineHeight = textSize * 1.2;
+    const textStartY = this.y + this.radius * 0.1;
+
+    lines.forEach((line, index) => {
+      const y = textStartY + (index * lineHeight);
+      ctx.fillText(line, this.x, y);
+    });
+
+    ctx.restore();
+  }
+}
+
+// Initialize content providers and rotator
+async function initContentProviders() {
+  // Import provider classes (using script tags in HTML)
+  const ClockProvider = window.ClockProvider;
+  const StockProvider = window.StockProvider;
+  const SystemInfoProvider = window.SystemInfoProvider;
+  const ContentRotator = window.ContentRotator;
+
+  // Get content settings (will add IPC handler later)
+  const contentSettings = {
+    enabled: true,
+    intervalSeconds: 10,
+    enabledProviders: ['clock', 'stocks', 'system'],
+    providers: {
+      clock: { backgroundColor: '#1a1a2e', show24Hour: false },
+      stocks: { backgroundColor: null, symbols: ['AAPL', 'GOOGL', 'TSLA'] },
+      system: { backgroundColor: '#1a1a2e', showBattery: true }
+    }
+  };
+
+  const providers = [];
+
+  if (contentSettings.enabledProviders.includes('clock')) {
+    providers.push(new ClockProvider(contentSettings.providers.clock));
+  }
+
+  if (contentSettings.enabledProviders.includes('stocks')) {
+    providers.push(new StockProvider(contentSettings.providers.stocks));
+  }
+
+  if (contentSettings.enabledProviders.includes('system')) {
+    providers.push(new SystemInfoProvider(contentSettings.providers.system));
+  }
+
+  // Create and start rotator
+  if (providers.length > 0) {
+    window.contentRotator = new ContentRotator(providers, contentSettings.intervalSeconds);
+    window.contentRotator.start();
   }
 }
 
@@ -130,6 +247,10 @@ async function init() {
   ballSizePercentage = await window.oledSaver.getBallSize();
   ballOpacityPercentage = await window.oledSaver.getBallOpacity();
   ball = new BouncingBall();
+
+  // Initialize content providers
+  await initContentProviders();
+
   animate();
 }
 
@@ -140,5 +261,8 @@ window.oledSaver.onFadeOut(() => {
   document.getElementById('container').classList.add('fade-out');
   if (animationId) {
     cancelAnimationFrame(animationId);
+  }
+  if (window.contentRotator) {
+    window.contentRotator.destroy();
   }
 });
