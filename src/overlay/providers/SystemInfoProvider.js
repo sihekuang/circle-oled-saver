@@ -8,22 +8,12 @@ class SystemInfoProvider extends ContentProvider {
 
   async fetchData() {
     try {
-      // CPU usage (note: only available in Electron main process)
-      // We'll get this via IPC in the real implementation
-      // For now, use placeholder
-      const cpuUsage = this.config.cpuUsage || 0;
+      // Get real system info via IPC
+      const systemInfo = await window.oledSaver.getSystemInfo();
 
-      // Memory usage (available in renderer via performance API)
-      let memPercent = 0;
-      if (typeof performance !== 'undefined' && performance.memory) {
-        const used = performance.memory.usedJSHeapSize;
-        const total = performance.memory.jsHeapSizeLimit;
-        memPercent = Math.round((used / total) * 100);
-      }
+      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.memPercent}%`;
 
-      let text = `⚙️ ${cpuUsage}%  💾 ${memPercent}%`;
-
-      // Battery (if available) - cache the battery manager
+      // Battery (if available)
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
         try {
           if (!this._batteryManager) {
@@ -32,7 +22,7 @@ class SystemInfoProvider extends ContentProvider {
           const batteryPercent = Math.round(this._batteryManager.level * 100);
           text += `\n🔋 ${batteryPercent}%`;
         } catch (e) {
-          // Battery API not available, skip
+          // Battery API not available
         }
       }
 
