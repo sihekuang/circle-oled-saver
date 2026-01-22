@@ -94,8 +94,18 @@ class BouncingBall {
   }
 
   draw() {
-    // Temporarily disable content providers - just show gradient ball
-    this.drawGradient();
+    // Get content from current provider
+    const content = window.contentRotator ?
+      window.contentRotator.getCurrentProvider()?.getData() :
+      null;
+
+    if (content) {
+      // Draw circle with content
+      this.drawWithContent(content);
+    } else {
+      // Fallback to original gradient ball
+      this.drawGradient();
+    }
   }
 
   drawGradient() {
@@ -253,9 +263,9 @@ async function init() {
     ball = new BouncingBall();
     console.log('[Overlay] BouncingBall created');
 
-    // Skip content providers for now - just test bouncing ball
-    // await initContentProviders();
-    console.log('[Overlay] Skipping content providers - showing gradient ball');
+    // Initialize content providers
+    await initContentProviders();
+    console.log('[Overlay] Content providers initialized');
 
     animate();
     console.log('[Overlay] Animation started');
