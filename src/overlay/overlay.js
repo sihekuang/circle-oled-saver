@@ -145,6 +145,11 @@ class BouncingBall {
       window.backgroundProvider.getColor(this.hue) :
       `hsl(${this.hue}, 70%, 30%)`;
 
+    // Debug: log occasionally
+    if (Math.random() < 0.01) {
+      console.log('[BouncingBall] hue:', this.hue, 'bgColor:', bgColor, 'provider:', !!window.backgroundProvider);
+    }
+
     ctx.fillStyle = this.addOpacity(bgColor, opacity);
     ctx.fill();
 
