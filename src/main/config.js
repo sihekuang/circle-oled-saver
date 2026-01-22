@@ -30,6 +30,31 @@ const schema = {
     default: 100,
     minimum: 10,
     maximum: 100
+  },
+  contentRotation: {
+    type: 'object',
+    default: {
+      enabled: true,
+      intervalSeconds: 10,
+      enabledProviders: ['clock', 'stocks', 'system']
+    }
+  },
+  contentProviders: {
+    type: 'object',
+    default: {
+      clock: {
+        backgroundColor: '#1a1a2e',
+        show24Hour: false
+      },
+      stocks: {
+        backgroundColor: null,
+        symbols: ['AAPL', 'GOOGL', 'TSLA']
+      },
+      system: {
+        backgroundColor: '#1a1a2e',
+        showBattery: true
+      }
+    }
   }
 };
 
@@ -84,5 +109,37 @@ module.exports = {
 
   setBallOpacity(percentage) {
     store.set('ballOpacity', percentage);
+  },
+
+  getContentRotation() {
+    return store.get('contentRotation');
+  },
+
+  setContentRotation(settings) {
+    store.set('contentRotation', settings);
+  },
+
+  getContentProviders() {
+    return store.get('contentProviders');
+  },
+
+  setContentProviders(providers) {
+    store.set('contentProviders', providers);
+  },
+
+  getContentSettings() {
+    return {
+      rotation: store.get('contentRotation'),
+      providers: store.get('contentProviders')
+    };
+  },
+
+  setContentSettings(settings) {
+    if (settings.rotation) {
+      store.set('contentRotation', settings.rotation);
+    }
+    if (settings.providers) {
+      store.set('contentProviders', settings.providers);
+    }
   }
 };
