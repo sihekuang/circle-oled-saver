@@ -1,63 +1,13 @@
 const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 const config = require('./config');
-const os = require('os');
-const { execSync } = require('child_process');
+const si = require('systeminformation');
 
 class WindowManager {
   constructor() {
     this.overlayWindows = [];
     this.settingsWindow = null;
     this.onDismiss = null;
-    this.previousCpuInfo = null;
-  }
-
-  // Get memory pressure on macOS (1=Normal, 2=Warning, 4=Critical)
-  getMemoryPressure() {
-    if (process.platform !== 'darwin') {
-      return null; // Only available on macOS
-    }
-
-    try {
-      const result = execSync('sysctl kern.memorystatus_vm_pressure_level', { encoding: 'utf8' });
-      const match = result.match(/kern\.memorystatus_vm_pressure_level:\s*(\d+)/);
-      if (match) {
-        const level = parseInt(match[1]);
-        // 1 = Normal, 2 = Warning, 4 = Critical
-        if (level === 1) return 'Normal';
-        if (level === 2) return 'Warning';
-        if (level === 4) return 'Critical';
-      }
-    } catch (err) {
-      console.error('[WindowManager] Failed to get memory pressure:', err);
-    }
-    return 'Unknown';
-  }
-
-  // Calculate system-wide CPU usage
-  getCpuUsagePercent() {
-    const cpus = os.cpus();
-    let totalIdle = 0;
-    let totalTick = 0;
-
-    cpus.forEach(cpu => {
-      for (let type in cpu.times) {
-        totalTick += cpu.times[type];
-      }
-      totalIdle += cpu.times.idle;
-    });
-
-    if (!this.previousCpuInfo) {
-      this.previousCpuInfo = { totalIdle, totalTick };
-      return 0; // First call, need baseline
-    }
-
-    const idleDiff = totalIdle - this.previousCpuInfo.totalIdle;
-    const totalDiff = totalTick - this.previousCpuInfo.totalTick;
-    const cpuPercent = 100 - ~~(100 * idleDiff / totalDiff);
-
-    this.previousCpuInfo = { totalIdle, totalTick };
-    return cpuPercent;
   }
 
   createOverlays(onDismiss, debugMode = false) {
@@ -144,15 +94,34 @@ class WindowManager {
     });
 
     ipcMain.handle('get-system-info', async () => {
-      const cpuPercent = this.getCpuUsagePercent();
-      const memoryPressure = this.getMemoryPressure();
+      try {
+        // Get accurate system-wide CPU load (current load across all cores)
+        const cpuData = await si.currentLoad();
+        const cpuPercent = Math.round(cpuData.currentLoad);
 
-      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory Pressure:', memoryPressure);
+        // Get memory info with available memory
+        const memData = await si.mem();
+        const memPercent = Math.round((memData.used / memData.total) * 100);
+        const memUsedGB = (memData.used / 1024 / 1024 / 1024).toFixed(1);
+        const memTotalGB = (memData.total / 1024 / 1024 / 1024).toFixed(1);
 
-      return {
-        cpuPercent: Math.round(cpuPercent),
-        memoryPressure: memoryPressure
-      };
+        console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', memUsedGB, '/', memTotalGB, 'GB (', memPercent, '%)');
+
+        return {
+          cpuPercent: cpuPercent,
+          memUsedGB: memUsedGB,
+          memTotalGB: memTotalGB,
+          memPercent: memPercent
+        };
+      } catch (err) {
+        console.error('[WindowManager] Failed to get system info:', err);
+        return {
+          cpuPercent: 0,
+          memUsedGB: '0',
+          memTotalGB: '0',
+          memPercent: 0
+        };
+      }
     });
   }
 
