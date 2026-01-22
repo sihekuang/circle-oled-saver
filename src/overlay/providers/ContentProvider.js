@@ -4,6 +4,7 @@ class ContentProvider {
     this.config = config;
     this.cachedData = null;
     this.refreshInterval = null;
+    this._fetching = false; // Guard flag
   }
 
   /**
@@ -39,12 +40,28 @@ class ContentProvider {
    */
   start() {
     // Initial fetch
-    this.fetchData().catch(err => console.error('Provider fetch error:', err));
+    this._fetching = true;
+    this.fetchData()
+      .catch(err => console.error('Provider fetch error:', err))
+      .finally(() => { this._fetching = false; });
+
+    // Validate refresh interval
+    const interval = this.getRefreshInterval();
+    if (typeof interval !== 'number' || interval <= 0) {
+      console.error('Invalid refresh interval:', interval);
+      return;
+    }
 
     // Setup interval
     this.refreshInterval = setInterval(() => {
-      this.fetchData().catch(err => console.error('Provider fetch error:', err));
-    }, this.getRefreshInterval());
+      // Guard against overlapping fetches
+      if (!this._fetching) {
+        this._fetching = true;
+        this.fetchData()
+          .catch(err => console.error('Provider fetch error:', err))
+          .finally(() => { this._fetching = false; });
+      }
+    }, interval);
   }
 
   /**
@@ -55,6 +72,7 @@ class ContentProvider {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
     }
+    this.cachedData = null; // Allow garbage collection
   }
 }
 
