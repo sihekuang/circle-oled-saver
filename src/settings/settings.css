@@ -127,6 +127,15 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
 }
 
+/* Info text */
+.info-text {
+  color: #999;
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
 input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
