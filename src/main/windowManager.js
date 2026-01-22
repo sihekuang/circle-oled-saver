@@ -2,6 +2,7 @@ const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 const config = require('./config');
 const os = require('os');
+const { execSync } = require('child_process');
 
 class WindowManager {
   constructor() {
@@ -9,6 +10,28 @@ class WindowManager {
     this.settingsWindow = null;
     this.onDismiss = null;
     this.previousCpuInfo = null;
+  }
+
+  // Get memory pressure on macOS (1=Normal, 2=Warning, 4=Critical)
+  getMemoryPressure() {
+    if (process.platform !== 'darwin') {
+      return null; // Only available on macOS
+    }
+
+    try {
+      const result = execSync('sysctl kern.memorystatus_vm_pressure_level', { encoding: 'utf8' });
+      const match = result.match(/kern\.memorystatus_vm_pressure_level:\s*(\d+)/);
+      if (match) {
+        const level = parseInt(match[1]);
+        // 1 = Normal, 2 = Warning, 4 = Critical
+        if (level === 1) return 'Normal';
+        if (level === 2) return 'Warning';
+        if (level === 4) return 'Critical';
+      }
+    } catch (err) {
+      console.error('[WindowManager] Failed to get memory pressure:', err);
+    }
+    return 'Unknown';
   }
 
   // Calculate system-wide CPU usage
@@ -122,18 +145,13 @@ class WindowManager {
 
     ipcMain.handle('get-system-info', async () => {
       const cpuPercent = this.getCpuUsagePercent();
-      const memInfo = process.getSystemMemoryInfo();
+      const memoryPressure = this.getMemoryPressure();
 
-      // Convert KB to GB
-      const totalGB = (memInfo.total / 1024 / 1024).toFixed(1);
-      const freeGB = (memInfo.free / 1024 / 1024).toFixed(1);
-
-      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', freeGB, 'GB free of', totalGB, 'GB');
+      console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory Pressure:', memoryPressure);
 
       return {
         cpuPercent: Math.round(cpuPercent),
-        totalMemoryGB: totalGB,
-        freeMemoryGB: freeGB
+        memoryPressure: memoryPressure
       };
     });
   }
