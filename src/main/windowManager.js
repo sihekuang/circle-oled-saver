@@ -12,47 +12,52 @@ class WindowManager {
   createOverlays(onDismiss) {
     this.onDismiss = onDismiss;
 
-    // Get primary display only (single screen overlay)
-    const display = screen.getPrimaryDisplay();
+    // Get all displays to show overlay on every monitor
+    const displays = screen.getAllDisplays();
 
-    console.log('[WindowManager] Creating overlay on primary display');
+    console.log(`[WindowManager] Creating overlays on ${displays.length} display(s)`);
 
-    const overlay = new BrowserWindow({
-      x: display.bounds.x,
-      y: display.bounds.y,
-      width: display.bounds.width,
-      height: display.bounds.height,
-      frame: false,
-      alwaysOnTop: true,
-      skipTaskbar: true,
-      transparent: true,
-      hasShadow: false,
-      focusable: false,
-      roundedCorners: false,
-      show: false,
-      webPreferences: {
-        preload: path.join(__dirname, '../preload/preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false
-      }
+    // Create an overlay for each display
+    displays.forEach((display, index) => {
+      console.log(`[WindowManager] Creating overlay ${index + 1} on display at ${display.bounds.x},${display.bounds.y}`);
+
+      const overlay = new BrowserWindow({
+        x: display.bounds.x,
+        y: display.bounds.y,
+        width: display.bounds.width,
+        height: display.bounds.height,
+        frame: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        transparent: true,
+        hasShadow: false,
+        focusable: false,
+        roundedCorners: false,
+        show: false,
+        webPreferences: {
+          preload: path.join(__dirname, '../preload/preload.js'),
+          contextIsolation: true,
+          nodeIntegration: false
+        }
+      });
+
+      // Make clicks pass through to windows below
+      overlay.setIgnoreMouseEvents(true, { forward: true });
+
+      overlay.loadFile(path.join(__dirname, '../overlay/overlay.html'));
+
+      // Show without focusing to avoid bringing settings window forward
+      overlay.once('ready-to-show', () => {
+        overlay.showInactive();
+      });
+
+      // Prevent the window from being closed by the user
+      overlay.on('close', (e) => {
+        e.preventDefault();
+      });
+
+      this.overlayWindows.push(overlay);
     });
-
-    // Make clicks pass through to windows below
-    overlay.setIgnoreMouseEvents(true, { forward: true });
-
-    overlay.loadFile(path.join(__dirname, '../overlay/overlay.html'));
-
-    // Show without focusing to avoid bringing settings window forward
-    overlay.once('ready-to-show', () => {
-      overlay.showInactive();
-    });
-
-    // Prevent the window from being closed by the user
-    overlay.on('close', (e) => {
-      e.preventDefault();
-    });
-
-    this.overlayWindows.push(overlay);
 
     // Setup IPC handlers for overlay dismissal
     this.setupOverlayIPC();
