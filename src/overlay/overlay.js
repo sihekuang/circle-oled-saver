@@ -203,15 +203,15 @@ async function initContentProviders() {
 
   const providers = [];
 
-  if (contentSettings.enabledProviders.includes('clock')) {
+  if (contentSettings.rotation.enabledProviders.includes('clock')) {
     providers.push(new ClockProvider(contentSettings.providers.clock));
   }
 
-  if (contentSettings.enabledProviders.includes('stocks')) {
+  if (contentSettings.rotation.enabledProviders.includes('stocks')) {
     providers.push(new StockProvider(contentSettings.providers.stocks));
   }
 
-  if (contentSettings.enabledProviders.includes('system')) {
+  if (contentSettings.rotation.enabledProviders.includes('system')) {
     providers.push(new SystemInfoProvider(contentSettings.providers.system));
   }
 
