@@ -96,6 +96,8 @@ class WindowManager {
       const cpuUsage = process.getCPUUsage();
       const memInfo = process.getSystemMemoryInfo();
 
+      console.log('[WindowManager] System info - CPU:', cpuUsage, 'Memory:', memInfo);
+
       return {
         cpuPercent: Math.round(cpuUsage.percentCPUUsage),
         memPercent: Math.round(((memInfo.total - memInfo.free) / memInfo.total) * 100)
