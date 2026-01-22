@@ -67,6 +67,8 @@ class WindowManager {
     ipcMain.removeHandler('dismiss-overlay');
     ipcMain.removeHandler('get-ball-size');
     ipcMain.removeHandler('get-ball-opacity');
+    ipcMain.removeHandler('get-content-settings');
+    ipcMain.removeHandler('get-system-info');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
