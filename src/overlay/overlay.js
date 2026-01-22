@@ -215,9 +215,20 @@ async function initContentProviders() {
     providers.push(new SystemInfoProvider(contentSettings.providers.system));
   }
 
-  // Create and start rotator
-  if (providers.length > 0) {
-    window.contentRotator = new ContentRotator(providers, contentSettings.intervalSeconds);
+  if (providers.length === 0) {
+    console.log('No content providers enabled, using gradient ball');
+    return;
+  }
+
+  if (contentSettings.rotation.enabled) {
+    window.contentRotator = new ContentRotator(
+      providers,
+      contentSettings.rotation.intervalSeconds
+    );
+    window.contentRotator.start();
+  } else {
+    // Content rotation disabled, just use first provider
+    window.contentRotator = new ContentRotator(providers, 9999);
     window.contentRotator.start();
   }
 }

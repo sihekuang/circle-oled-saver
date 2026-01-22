@@ -11,31 +11,38 @@ class StockProvider extends ContentProvider {
 
   async fetchData() {
     try {
-      // Fetch all symbols
       await this.fetchAllStocks();
 
-      // Get current symbol data
       const symbol = this.symbols[this.currentIndex];
-      const data = this.stockData[symbol] || { price: '---', change: 0, changePercent: 0 };
+      const data = this.stockData[symbol];
 
-      const arrow = data.change >= 0 ? '↑' : '↓';
-      const changePercent = Math.abs(data.changePercent).toFixed(2);
+      if (!data) {
+        // No data available yet
+        this.cachedData = {
+          icon: '📈',
+          text: `${symbol}\nLoading...`,
+          backgroundColor: this.config.backgroundColor || '#1a1a2e'
+        };
+      } else {
+        const arrow = data.change >= 0 ? '↑' : '↓';
+        const changePercent = Math.abs(data.changePercent).toFixed(2);
 
-      // Determine background color
-      let bgColor = this.config.backgroundColor;
-      if (bgColor === null || bgColor === undefined) {
-        // Auto color based on gain/loss
-        bgColor = data.change >= 0 ? '#1a4d2e' : '#4d1a1a';
+        let bgColor = this.config.backgroundColor;
+        if (bgColor === null || bgColor === undefined) {
+          bgColor = data.change >= 0 ? '#1a4d2e' : '#4d1a1a';
+        }
+
+        this.cachedData = {
+          icon: '📈',
+          text: `${symbol} $${data.price}\n${arrow} ${changePercent}%`,
+          backgroundColor: bgColor
+        };
       }
 
-      this.cachedData = {
-        icon: '📈',
-        text: `${symbol} $${data.price}\n${arrow} ${changePercent}%`,
-        backgroundColor: bgColor
-      };
-
-      // Rotate to next symbol for next display
+      // Rotate to next symbol
       this.currentIndex = (this.currentIndex + 1) % this.symbols.length;
+
+      console.log(`[${this.constructor.name}] Data updated:`, this.cachedData.text.replace('\n', ' '));
     } catch (err) {
       console.error('StockProvider fetch error:', err);
       this.cachedData = {
@@ -47,9 +54,15 @@ class StockProvider extends ContentProvider {
   }
 
   async fetchAllStocks() {
-    // Fetch data for all symbols from Yahoo Finance
     const promises = this.symbols.map(symbol => this.fetchStockQuote(symbol));
-    await Promise.allSettled(promises);
+    const results = await Promise.allSettled(promises);
+
+    // Log any failures
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.warn(`Failed to fetch ${this.symbols[index]}:`, result.reason);
+      }
+    });
   }
 
   async fetchStockQuote(symbol) {
