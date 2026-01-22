@@ -10,7 +10,12 @@ class SystemInfoProvider extends window.ContentProvider {
       // Get real system info via IPC
       const systemInfo = await window.oledSaver.getSystemInfo();
 
-      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.freeMemoryGB}/${systemInfo.totalMemoryGB} GB`;
+      // Memory pressure emoji based on level
+      let memEmoji = '💾';
+      if (systemInfo.memoryPressure === 'Warning') memEmoji = '⚠️';
+      else if (systemInfo.memoryPressure === 'Critical') memEmoji = '🔴';
+
+      let text = `⚙️ ${systemInfo.cpuPercent}%  ${memEmoji} ${systemInfo.memoryPressure}`;
 
       // Battery (if available)
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
@@ -35,7 +40,7 @@ class SystemInfoProvider extends window.ContentProvider {
       console.error('SystemInfoProvider fetch error:', err);
       this.cachedData = {
         icon: '📊',
-        text: '⚙️ N/A  💾 N/A GB'
+        text: '⚙️ N/A  💾 N/A'
       };
     }
   }
