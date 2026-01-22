@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('oledSaver', {
   // Settings APIs
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  getContentSettings: () => ipcRenderer.invoke('get-content-settings'),
+  saveContentSettings: (settings) => ipcRenderer.invoke('save-content-settings', settings),
 
   // Event listeners
   onFadeOut: (callback) => {

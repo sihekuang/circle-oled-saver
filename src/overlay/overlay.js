@@ -198,17 +198,8 @@ async function initContentProviders() {
   const SystemInfoProvider = window.SystemInfoProvider;
   const ContentRotator = window.ContentRotator;
 
-  // Get content settings (will add IPC handler later)
-  const contentSettings = {
-    enabled: true,
-    intervalSeconds: 10,
-    enabledProviders: ['clock', 'stocks', 'system'],
-    providers: {
-      clock: { backgroundColor: '#1a1a2e', show24Hour: false },
-      stocks: { backgroundColor: null, symbols: ['AAPL', 'GOOGL', 'TSLA'] },
-      system: { backgroundColor: '#1a1a2e', showBattery: true }
-    }
-  };
+  // Get content settings from config
+  const contentSettings = await window.oledSaver.getContentSettings();
 
   const providers = [];
 
