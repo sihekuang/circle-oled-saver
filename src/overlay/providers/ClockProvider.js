@@ -28,6 +28,8 @@ class ClockProvider extends ContentProvider {
       text: `${time}\n${date}`,
       backgroundColor: this.config.backgroundColor || '#1a1a2e'
     };
+
+    console.log(`[${this.constructor.name}] Data updated:`, this.cachedData.text.replace('\n', ' '));
   }
 
   getRefreshInterval() {
