@@ -31,6 +31,12 @@ const schema = {
     minimum: 10,
     maximum: 100
   },
+  ballSpeed: {
+    type: 'number',
+    default: 100,
+    minimum: 25,
+    maximum: 300
+  },
   contentRotation: {
     type: 'object',
     default: {
@@ -106,6 +112,14 @@ module.exports = {
 
   setBallOpacity(percentage) {
     store.set('ballOpacity', percentage);
+  },
+
+  getBallSpeed() {
+    return store.get('ballSpeed');
+  },
+
+  setBallSpeed(percentage) {
+    store.set('ballSpeed', percentage);
   },
 
   getContentRotation() {

@@ -5,6 +5,7 @@ let animationId = null;
 let ball = null;
 let ballSizePercentage = 10; // Default value
 let ballOpacityPercentage = 100; // Default value
+let ballSpeedPercentage = 100; // Default value
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -22,9 +23,11 @@ class BouncingBall {
     this.updateSize();
     this.x = canvas.width / 2;
     this.y = canvas.height / 2;
-    this.speedX = 4;
-    this.speedY = 3;
-    this.maxSpeed = 8;
+    // Base speed multiplied by speed percentage (100 = normal)
+    const speedMultiplier = ballSpeedPercentage / 100;
+    this.speedX = 4 * speedMultiplier;
+    this.speedY = 3 * speedMultiplier;
+    this.maxSpeed = 8 * speedMultiplier;
     this.hue = Math.random() * 360;
   }
 
@@ -285,7 +288,8 @@ async function init() {
   try {
     ballSizePercentage = await window.oledSaver.getBallSize();
     ballOpacityPercentage = await window.oledSaver.getBallOpacity();
-    console.log('[Overlay] Ball size/opacity loaded:', { ballSizePercentage, ballOpacityPercentage });
+    ballSpeedPercentage = await window.oledSaver.getBallSpeed();
+    console.log('[Overlay] Ball settings loaded:', { ballSizePercentage, ballOpacityPercentage, ballSpeedPercentage });
 
     // Initialize background provider (animated for OLED burn-in prevention)
     window.backgroundProvider = new AnimatedBackgroundProvider({
