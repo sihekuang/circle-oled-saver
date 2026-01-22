@@ -83,6 +83,16 @@ class WindowManager {
     ipcMain.handle('get-content-settings', () => {
       return config.getContentSettings();
     });
+
+    ipcMain.handle('get-system-info', async () => {
+      const cpuUsage = process.getCPUUsage();
+      const memInfo = process.getSystemMemoryInfo();
+
+      return {
+        cpuPercent: Math.round(cpuUsage.percentCPUUsage),
+        memPercent: Math.round(((memInfo.total - memInfo.free) / memInfo.total) * 100)
+      };
+    });
   }
 
   dismissOverlays() {
