@@ -35,12 +35,14 @@ class AnimatedBackgroundProvider extends window.BackgroundProvider {
       r = c; g = 0; b = x;
     }
 
-    // Convert to RGB 0-255 range
+    // Convert to RGB 0-255 range and return as hex for easier opacity handling
     const red = Math.round((r + m) * 255);
     const green = Math.round((g + m) * 255);
     const blue = Math.round((b + m) * 255);
 
-    return `rgb(${red}, ${green}, ${blue})`;
+    // Return as hex color
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
   }
 }
 
