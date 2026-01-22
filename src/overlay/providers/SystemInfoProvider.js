@@ -10,12 +10,7 @@ class SystemInfoProvider extends window.ContentProvider {
       // Get real system info via IPC
       const systemInfo = await window.oledSaver.getSystemInfo();
 
-      // Memory pressure emoji based on level
-      let memEmoji = '💾';
-      if (systemInfo.memoryPressure === 'Warning') memEmoji = '⚠️';
-      else if (systemInfo.memoryPressure === 'Critical') memEmoji = '🔴';
-
-      let text = `⚙️ ${systemInfo.cpuPercent}%  ${memEmoji} ${systemInfo.memoryPressure}`;
+      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.memUsedGB}/${systemInfo.memTotalGB} GB`;
 
       // Battery (if available)
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
