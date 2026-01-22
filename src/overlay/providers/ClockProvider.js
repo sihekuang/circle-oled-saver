@@ -3,6 +3,7 @@
 class ClockProvider extends window.ContentProvider {
   constructor(config = {}) {
     super(config);
+    this.hue = 0; // Start hue for color cycling
   }
 
   async fetchData() {
@@ -22,10 +23,22 @@ class ClockProvider extends window.ContentProvider {
     const time = now.toLocaleTimeString('en-US', timeOptions);
     const date = now.toLocaleDateString('en-US', dateOptions);
 
+    // Cycle through colors: increment hue slowly
+    this.hue = (this.hue + 1) % 360;
+
+    // Use configured color or generate color based on hue
+    let bgColor;
+    if (this.config.backgroundColor && this.config.backgroundColor !== 'auto') {
+      bgColor = this.config.backgroundColor;
+    } else {
+      // Generate a nice saturated color
+      bgColor = `hsl(${this.hue}, 70%, 30%)`;
+    }
+
     this.cachedData = {
       icon: '🕐',
       text: `${time}\n${date}`,
-      backgroundColor: this.config.backgroundColor || '#1a1a2e'
+      backgroundColor: bgColor
     };
 
     console.log(`[${this.constructor.name}] Data updated:`, this.cachedData.text.replace('\n', ' '));

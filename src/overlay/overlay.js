@@ -167,7 +167,6 @@ class BouncingBall {
     ctx.save();
 
     // Set text properties
-    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -175,6 +174,12 @@ class BouncingBall {
     const iconSize = this.radius * 0.25;
     ctx.font = `${iconSize}px Arial`;
     const iconY = this.y - this.radius * 0.3;
+
+    // Draw icon with black stroke for visibility
+    ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+    ctx.lineWidth = Math.max(2, iconSize * 0.1);
+    ctx.strokeText(content.icon, this.x, iconY);
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
     ctx.fillText(content.icon, this.x, iconY);
 
     // Text size and position (below icon)
@@ -188,6 +193,9 @@ class BouncingBall {
 
     lines.forEach((line, index) => {
       const y = textStartY + (index * lineHeight);
+      // Draw text with black stroke for visibility
+      ctx.lineWidth = Math.max(2, textSize * 0.1);
+      ctx.strokeText(line, this.x, y);
       ctx.fillText(line, this.x, y);
     });
 
