@@ -290,7 +290,7 @@ async function init() {
     // Initialize background provider (animated for OLED burn-in prevention)
     window.backgroundProvider = new AnimatedBackgroundProvider({
       saturation: 70,
-      lightness: 30
+      lightness: 50  // Increased from 30 to make colors more visible
     });
     console.log('[Overlay] Background provider initialized');
 
