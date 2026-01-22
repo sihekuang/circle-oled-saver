@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('oledSaver', {
   dismissOverlay: () => ipcRenderer.invoke('dismiss-overlay'),
   getBallSize: () => ipcRenderer.invoke('get-ball-size'),
   getBallOpacity: () => ipcRenderer.invoke('get-ball-opacity'),
+  getBallSpeed: () => ipcRenderer.invoke('get-ball-speed'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 
   // Settings APIs

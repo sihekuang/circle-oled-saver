@@ -5,6 +5,8 @@ const ballSizeSlider = document.getElementById('ball-size');
 const ballSizeValueInput = document.getElementById('ball-size-value');
 const ballOpacitySlider = document.getElementById('ball-opacity');
 const ballOpacityValueInput = document.getElementById('ball-opacity-value');
+const ballSpeedSlider = document.getElementById('ball-speed');
+const ballSpeedValueInput = document.getElementById('ball-speed-value');
 const launchAtLoginCheckbox = document.getElementById('launch-at-login');
 
 async function loadSettings() {
@@ -20,6 +22,9 @@ async function loadSettings() {
 
   ballOpacitySlider.value = settings.ballOpacity;
   ballOpacityValueInput.value = settings.ballOpacity;
+
+  ballSpeedSlider.value = settings.ballSpeed;
+  ballSpeedValueInput.value = settings.ballSpeed;
 
   launchAtLoginCheckbox.checked = settings.launchAtLogin;
 
@@ -68,6 +73,13 @@ async function saveBallOpacity(percentage) {
   ballOpacitySlider.value = percentage;
   ballOpacityValueInput.value = percentage;
   await window.oledSaver.saveSettings({ ballOpacity: percentage });
+}
+
+async function saveBallSpeed(percentage) {
+  percentage = Math.max(25, Math.min(300, parseInt(percentage) || 100));
+  ballSpeedSlider.value = percentage;
+  ballSpeedValueInput.value = percentage;
+  await window.oledSaver.saveSettings({ ballSpeed: percentage });
 }
 
 async function saveSettings() {
@@ -143,6 +155,18 @@ ballOpacitySlider.addEventListener('change', async () => {
 
 ballOpacityValueInput.addEventListener('change', async () => {
   await saveBallOpacity(ballOpacityValueInput.value);
+});
+
+ballSpeedSlider.addEventListener('input', () => {
+  ballSpeedValueInput.value = ballSpeedSlider.value;
+});
+
+ballSpeedSlider.addEventListener('change', async () => {
+  await saveBallSpeed(ballSpeedSlider.value);
+});
+
+ballSpeedValueInput.addEventListener('change', async () => {
+  await saveBallSpeed(ballSpeedValueInput.value);
 });
 
 launchAtLoginCheckbox.addEventListener('change', async () => {
