@@ -22,6 +22,39 @@ async function loadSettings() {
   ballOpacityValueInput.value = settings.ballOpacity;
 
   launchAtLoginCheckbox.checked = settings.launchAtLogin;
+
+  // Content settings
+  if (settings.content) {
+    const { rotation, providers } = settings.content;
+
+    // Rotation settings
+    document.getElementById('content-rotation-enabled').checked = rotation.enabled;
+    document.getElementById('rotation-interval').value = rotation.intervalSeconds;
+    document.getElementById('rotation-interval-value').textContent = `${rotation.intervalSeconds}s`;
+
+    // Enabled providers
+    rotation.enabledProviders.forEach(provider => {
+      const checkbox = document.getElementById(`provider-${provider}`);
+      if (checkbox) checkbox.checked = true;
+    });
+
+    // Clock settings
+    document.getElementById('clock-bg-color').value = providers.clock.backgroundColor;
+    document.getElementById('clock-24hour').checked = providers.clock.show24Hour;
+
+    // Stock settings
+    document.getElementById('stock-symbols').value = providers.stocks.symbols.join(', ');
+    if (providers.stocks.backgroundColor) {
+      document.getElementById('stock-bg-color').value = providers.stocks.backgroundColor;
+      document.getElementById('stock-auto-color').checked = false;
+    } else {
+      document.getElementById('stock-auto-color').checked = true;
+    }
+
+    // System settings
+    document.getElementById('system-bg-color').value = providers.system.backgroundColor;
+    document.getElementById('system-show-battery').checked = providers.system.showBattery;
+  }
 }
 
 async function saveTimeout(seconds) {
@@ -43,6 +76,44 @@ async function saveBallOpacity(percentage) {
   ballOpacitySlider.value = percentage;
   ballOpacityValueInput.value = percentage;
   await window.oledSaver.saveSettings({ ballOpacity: percentage });
+}
+
+async function saveSettings() {
+  // Content settings
+  const enabledProviders = [];
+  ['clock', 'stocks', 'system'].forEach(provider => {
+    if (document.getElementById(`provider-${provider}`).checked) {
+      enabledProviders.push(provider);
+    }
+  });
+
+  const contentSettings = {
+    rotation: {
+      enabled: document.getElementById('content-rotation-enabled').checked,
+      intervalSeconds: parseInt(document.getElementById('rotation-interval').value),
+      enabledProviders: enabledProviders
+    },
+    providers: {
+      clock: {
+        backgroundColor: document.getElementById('clock-bg-color').value,
+        show24Hour: document.getElementById('clock-24hour').checked
+      },
+      stocks: {
+        backgroundColor: document.getElementById('stock-auto-color').checked ?
+          null : document.getElementById('stock-bg-color').value,
+        symbols: document.getElementById('stock-symbols').value
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0)
+      },
+      system: {
+        backgroundColor: document.getElementById('system-bg-color').value,
+        showBattery: document.getElementById('system-show-battery').checked
+      }
+    }
+  };
+
+  await window.oledSaver.saveContentSettings(contentSettings);
 }
 
 // Event listeners
@@ -88,6 +159,50 @@ ballOpacityValueInput.addEventListener('change', async () => {
 
 launchAtLoginCheckbox.addEventListener('change', async () => {
   await window.oledSaver.saveSettings({ launchAtLogin: launchAtLoginCheckbox.checked });
+});
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active class from all tabs and buttons
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+    // Add active class to clicked button and corresponding tab
+    btn.classList.add('active');
+    const tabId = btn.dataset.tab + '-tab';
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
+// Content settings event listeners
+document.getElementById('rotation-interval').addEventListener('input', (e) => {
+  document.getElementById('rotation-interval-value').textContent = `${e.target.value}s`;
+});
+
+// Save content settings when any content input changes
+const contentInputs = [
+  'content-rotation-enabled',
+  'rotation-interval',
+  'provider-clock',
+  'provider-stocks',
+  'provider-system',
+  'clock-bg-color',
+  'clock-24hour',
+  'stock-symbols',
+  'stock-bg-color',
+  'stock-auto-color',
+  'system-bg-color',
+  'system-show-battery'
+];
+
+contentInputs.forEach(id => {
+  const element = document.getElementById(id);
+  if (element) {
+    const eventType = element.type === 'range' ? 'change' :
+                      element.type === 'text' ? 'blur' : 'change';
+    element.addEventListener(eventType, saveSettings);
+  }
 });
 
 // Initialize
