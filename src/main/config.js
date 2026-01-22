@@ -19,11 +19,16 @@ const schema = {
     type: 'boolean',
     default: false
   },
+  ballSizeMode: {
+    type: 'string',
+    enum: ['pixels', 'percentage'],
+    default: 'percentage'
+  },
   ballSize: {
     type: 'number',
     default: 10,
     minimum: 1,
-    maximum: 30
+    maximum: 500
   },
   ballOpacity: {
     type: 'number',
@@ -98,12 +103,20 @@ module.exports = {
     store.set('hasPromptedAutoStart', value);
   },
 
+  getBallSizeMode() {
+    return store.get('ballSizeMode');
+  },
+
+  setBallSizeMode(mode) {
+    store.set('ballSizeMode', mode);
+  },
+
   getBallSize() {
     return store.get('ballSize');
   },
 
-  setBallSize(percentage) {
-    store.set('ballSize', percentage);
+  setBallSize(value) {
+    store.set('ballSize', value);
   },
 
   getBallOpacity() {
