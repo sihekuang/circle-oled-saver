@@ -99,6 +99,11 @@ class BouncingBall {
       window.contentRotator.getCurrentProvider()?.getData() :
       null;
 
+    // Debug logging (only log occasionally to avoid spam)
+    if (Math.random() < 0.01) {
+      console.log('[BouncingBall] Draw - contentRotator:', !!window.contentRotator, 'content:', content);
+    }
+
     if (content) {
       // Draw circle with content
       this.drawWithContent(content);
@@ -192,20 +197,21 @@ class BouncingBall {
 
 // Initialize content providers and rotator
 async function initContentProviders() {
-  console.log('[Overlay] initContentProviders started');
+  try {
+    console.log('[Overlay] initContentProviders started');
 
-  // Import provider classes (using script tags in HTML)
-  const ClockProvider = window.ClockProvider;
-  const StockProvider = window.StockProvider;
-  const SystemInfoProvider = window.SystemInfoProvider;
-  const ContentRotator = window.ContentRotator;
+    // Import provider classes (using script tags in HTML)
+    const ClockProvider = window.ClockProvider;
+    const StockProvider = window.StockProvider;
+    const SystemInfoProvider = window.SystemInfoProvider;
+    const ContentRotator = window.ContentRotator;
 
-  console.log('[Overlay] Provider classes loaded:', { ClockProvider, StockProvider, SystemInfoProvider, ContentRotator });
+    console.log('[Overlay] Provider classes loaded:', { ClockProvider, StockProvider, SystemInfoProvider, ContentRotator });
 
-  // Get content settings from config
-  console.log('[Overlay] Fetching content settings...');
-  const contentSettings = await window.oledSaver.getContentSettings();
-  console.log('[Overlay] Content settings:', contentSettings);
+    // Get content settings from config
+    console.log('[Overlay] Fetching content settings...');
+    const contentSettings = await window.oledSaver.getContentSettings();
+    console.log('[Overlay] Content settings:', contentSettings);
 
   const providers = [];
 
@@ -232,10 +238,15 @@ async function initContentProviders() {
       contentSettings.rotation.intervalSeconds
     );
     window.contentRotator.start();
+    console.log('[Overlay] Content rotator started with', providers.length, 'providers');
   } else {
     // Content rotation disabled, just use first provider
     window.contentRotator = new ContentRotator(providers, 9999);
     window.contentRotator.start();
+    console.log('[Overlay] Content rotator started (rotation disabled) with', providers.length, 'providers');
+  }
+  } catch (error) {
+    console.error('[Overlay] Error initializing content providers:', error);
   }
 }
 
