@@ -23,11 +23,13 @@ class SystemInfoProvider extends ContentProvider {
 
       let text = `⚙️ ${cpuUsage}%  💾 ${memPercent}%`;
 
-      // Battery (if available)
+      // Battery (if available) - cache the battery manager
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
         try {
-          const battery = await navigator.getBattery();
-          const batteryPercent = Math.round(battery.level * 100);
+          if (!this._batteryManager) {
+            this._batteryManager = await navigator.getBattery();
+          }
+          const batteryPercent = Math.round(this._batteryManager.level * 100);
           text += `\n🔋 ${batteryPercent}%`;
         } catch (e) {
           // Battery API not available, skip
@@ -47,6 +49,11 @@ class SystemInfoProvider extends ContentProvider {
         backgroundColor: this.config.backgroundColor || '#1a1a2e'
       };
     }
+  }
+
+  destroy() {
+    super.destroy();
+    this._batteryManager = null;
   }
 
   getRefreshInterval() {
