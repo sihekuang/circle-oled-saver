@@ -153,6 +153,7 @@ class WindowManager {
   setupSettingsIPC() {
     ipcMain.removeHandler('get-settings');
     ipcMain.removeHandler('save-settings');
+    ipcMain.removeHandler('save-content-settings');
 
     ipcMain.handle('get-settings', () => {
       return {
