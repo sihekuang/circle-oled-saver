@@ -1,5 +1,6 @@
 // src/overlay/providers/StockProvider.js
-const ContentProvider = require('./ContentProvider');
+// In browser context, ContentProvider is loaded from window
+const ContentProvider = (typeof window !== 'undefined') ? window.ContentProvider : require('./ContentProvider');
 
 class StockProvider extends ContentProvider {
   constructor(config = {}) {
@@ -99,6 +100,11 @@ class StockProvider extends ContentProvider {
   }
 }
 
+// Export to window for browser use
+if (typeof window !== 'undefined') {
+  window.StockProvider = StockProvider;
+}
+// Also support Node.js module.exports for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = StockProvider;
 }

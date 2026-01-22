@@ -76,7 +76,11 @@ class ContentProvider {
   }
 }
 
-// Export for use in renderer process
+// Export to window for browser use
+if (typeof window !== 'undefined') {
+  window.ContentProvider = ContentProvider;
+}
+// Also support Node.js module.exports for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ContentProvider;
 }

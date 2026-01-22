@@ -1,5 +1,6 @@
 // src/overlay/providers/SystemInfoProvider.js
-const ContentProvider = require('./ContentProvider');
+// In browser context, ContentProvider is loaded from window
+const ContentProvider = (typeof window !== 'undefined') ? window.ContentProvider : require('./ContentProvider');
 
 class SystemInfoProvider extends ContentProvider {
   constructor(config = {}) {
@@ -53,6 +54,11 @@ class SystemInfoProvider extends ContentProvider {
   }
 }
 
+// Export to window for browser use
+if (typeof window !== 'undefined') {
+  window.SystemInfoProvider = SystemInfoProvider;
+}
+// Also support Node.js module.exports for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SystemInfoProvider;
 }

@@ -67,6 +67,11 @@ class ContentRotator {
   }
 }
 
+// Export to window for browser use
+if (typeof window !== 'undefined') {
+  window.ContentRotator = ContentRotator;
+}
+// Also support Node.js module.exports for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ContentRotator;
 }
