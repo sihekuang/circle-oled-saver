@@ -19,22 +19,15 @@ class StockProvider extends window.ContentProvider {
         // No data available yet
         this.cachedData = {
           icon: '📈',
-          text: `${symbol}\nLoading...`,
-          backgroundColor: this.config.backgroundColor || '#1a1a2e'
+          text: `${symbol}\nLoading...`
         };
       } else {
         const arrow = data.change >= 0 ? '↑' : '↓';
         const changePercent = Math.abs(data.changePercent).toFixed(2);
 
-        let bgColor = this.config.backgroundColor;
-        if (bgColor === null || bgColor === undefined) {
-          bgColor = data.change >= 0 ? '#1a4d2e' : '#4d1a1a';
-        }
-
         this.cachedData = {
           icon: '📈',
-          text: `${symbol} $${data.price}\n${arrow} ${changePercent}%`,
-          backgroundColor: bgColor
+          text: `${symbol} $${data.price}\n${arrow} ${changePercent}%`
         };
       }
 
@@ -46,8 +39,7 @@ class StockProvider extends window.ContentProvider {
       console.error('StockProvider fetch error:', err);
       this.cachedData = {
         icon: '📈',
-        text: 'Market data\nunavailable',
-        backgroundColor: this.config.backgroundColor || '#1a1a2e'
+        text: 'Market data\nunavailable'
       };
     }
   }

@@ -9,13 +9,12 @@ class ContentProvider {
 
   /**
    * Get current display data (synchronous - returns cached data)
-   * @returns {Object} { icon: string, text: string, backgroundColor: string }
+   * @returns {Object} { icon: string, text: string }
    */
   getData() {
     return this.cachedData || {
       icon: '❓',
-      text: 'Loading...',
-      backgroundColor: '#1a1a2e'
+      text: 'Loading...'
     };
   }
 
