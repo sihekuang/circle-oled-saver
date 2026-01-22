@@ -43,15 +43,12 @@ const schema = {
     type: 'object',
     default: {
       clock: {
-        backgroundColor: 'auto',
         show24Hour: false
       },
       stocks: {
-        backgroundColor: null,
         symbols: ['AAPL', 'GOOGL', 'TSLA']
       },
       system: {
-        backgroundColor: '#1a1a2e',
         showBattery: true
       }
     }

@@ -39,20 +39,12 @@ async function loadSettings() {
     });
 
     // Clock settings
-    document.getElementById('clock-bg-color').value = providers.clock.backgroundColor;
     document.getElementById('clock-24hour').checked = providers.clock.show24Hour;
 
     // Stock settings
     document.getElementById('stock-symbols').value = providers.stocks.symbols.join(', ');
-    if (providers.stocks.backgroundColor) {
-      document.getElementById('stock-bg-color').value = providers.stocks.backgroundColor;
-      document.getElementById('stock-auto-color').checked = false;
-    } else {
-      document.getElementById('stock-auto-color').checked = true;
-    }
 
     // System settings
-    document.getElementById('system-bg-color').value = providers.system.backgroundColor;
     document.getElementById('system-show-battery').checked = providers.system.showBattery;
   }
 }
@@ -95,19 +87,15 @@ async function saveSettings() {
     },
     providers: {
       clock: {
-        backgroundColor: document.getElementById('clock-bg-color').value,
         show24Hour: document.getElementById('clock-24hour').checked
       },
       stocks: {
-        backgroundColor: document.getElementById('stock-auto-color').checked ?
-          null : document.getElementById('stock-bg-color').value,
         symbols: document.getElementById('stock-symbols').value
           .split(',')
           .map(s => s.trim())
           .filter(s => s.length > 0)
       },
       system: {
-        backgroundColor: document.getElementById('system-bg-color').value,
         showBattery: document.getElementById('system-show-battery').checked
       }
     }
