@@ -140,9 +140,12 @@ class BouncingBall {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 
-    // Parse background color and add opacity
-    const bgColor = this.addOpacity(content.backgroundColor, opacity);
-    ctx.fillStyle = bgColor;
+    // Get background color from BackgroundProvider
+    const bgColor = window.backgroundProvider ?
+      window.backgroundProvider.getColor(this.hue) :
+      `hsl(${this.hue}, 70%, 30%)`;
+
+    ctx.fillStyle = this.addOpacity(bgColor, opacity);
     ctx.fill();
 
     // Add subtle shadow/border
@@ -278,6 +281,13 @@ async function init() {
     ballSizePercentage = await window.oledSaver.getBallSize();
     ballOpacityPercentage = await window.oledSaver.getBallOpacity();
     console.log('[Overlay] Ball size/opacity loaded:', { ballSizePercentage, ballOpacityPercentage });
+
+    // Initialize background provider (animated for OLED burn-in prevention)
+    window.backgroundProvider = new AnimatedBackgroundProvider({
+      saturation: 70,
+      lightness: 30
+    });
+    console.log('[Overlay] Background provider initialized');
 
     ball = new BouncingBall();
     console.log('[Overlay] BouncingBall created');

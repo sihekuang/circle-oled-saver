@@ -27,8 +27,7 @@ class SystemInfoProvider extends window.ContentProvider {
 
       this.cachedData = {
         icon: '📊',
-        text: text,
-        backgroundColor: this.config.backgroundColor || '#1a1a2e'
+        text: text
       };
 
       console.log(`[${this.constructor.name}] Data updated:`, this.cachedData.text.replace('\n', ' '));
@@ -36,8 +35,7 @@ class SystemInfoProvider extends window.ContentProvider {
       console.error('SystemInfoProvider fetch error:', err);
       this.cachedData = {
         icon: '📊',
-        text: '⚙️ N/A  💾 N/A',
-        backgroundColor: this.config.backgroundColor || '#1a1a2e'
+        text: '⚙️ N/A  💾 N/A'
       };
     }
   }
