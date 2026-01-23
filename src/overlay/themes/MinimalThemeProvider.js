@@ -33,8 +33,8 @@ class MinimalThemeProvider extends window.ThemeProvider {
     // Continuous slow hue shift for burn-in prevention
     let newHue = (hue + 0.1) % 360;
 
-    // Bounce off edges - use small margin so it reaches the edges
-    const margin = radius;
+    // Bounce when center hits edge (circle goes partially off-screen)
+    const margin = 0;
 
     if (newX < margin) {
       this.angle = Math.PI - this.angle; // Reflect horizontally
