@@ -1,6 +1,7 @@
 const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 const config = require('./config');
+const si = require('systeminformation');
 
 class WindowManager {
   constructor() {
@@ -9,8 +10,9 @@ class WindowManager {
     this.onDismiss = null;
   }
 
-  createOverlays(onDismiss) {
+  createOverlays(onDismiss, debugMode = false) {
     this.onDismiss = onDismiss;
+    this.debugMode = debugMode;
 
     // Get all displays to show overlay on every monitor
     const displays = screen.getAllDisplays();
@@ -49,6 +51,11 @@ class WindowManager {
       // Show without focusing to avoid bringing settings window forward
       overlay.once('ready-to-show', () => {
         overlay.showInactive();
+        // Open DevTools in debug mode
+        if (debugMode) {
+          overlay.webContents.openDevTools({ mode: 'detach' });
+          console.log('[WindowManager] Debug mode: DevTools opened, auto-dismiss disabled');
+        }
       });
 
       // Prevent the window from being closed by the user
@@ -65,11 +72,19 @@ class WindowManager {
 
   setupOverlayIPC() {
     ipcMain.removeHandler('dismiss-overlay');
+    ipcMain.removeHandler('get-ball-size-mode');
     ipcMain.removeHandler('get-ball-size');
     ipcMain.removeHandler('get-ball-opacity');
+    ipcMain.removeHandler('get-ball-speed');
+    ipcMain.removeHandler('get-content-settings');
+    ipcMain.removeHandler('get-system-info');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
+    });
+
+    ipcMain.handle('get-ball-size-mode', () => {
+      return config.getBallSizeMode();
     });
 
     ipcMain.handle('get-ball-size', () => {
@@ -78,6 +93,54 @@ class WindowManager {
 
     ipcMain.handle('get-ball-opacity', () => {
       return config.getBallOpacity();
+    });
+
+    ipcMain.handle('get-ball-speed', () => {
+      return config.getBallSpeed();
+    });
+
+    ipcMain.handle('get-content-settings', () => {
+      return config.getContentSettings();
+    });
+
+    ipcMain.handle('get-system-info', async () => {
+      try {
+        // Get accurate system-wide CPU load (current load across all cores)
+        const cpuData = await si.currentLoad();
+        const cpuPercent = Math.round(cpuData.currentLoad);
+
+        // Get memory info
+        const memData = await si.mem();
+
+        // On macOS, use 'active' memory (excludes cache/buffers)
+        // On other platforms, use 'used'
+        // 'active' represents memory actually used by applications (App Memory in Activity Monitor)
+        // 'used' includes cached files that can be freed
+        const os = require('os');
+        const isMac = os.platform() === 'darwin';
+        const memUsed = isMac && memData.active ? memData.active : memData.used;
+
+        const memUsedGB = (memUsed / 1024 / 1024 / 1024).toFixed(1);
+        const memTotalGB = (memData.total / 1024 / 1024 / 1024).toFixed(1);
+        const memPercent = Math.round((memUsed / memData.total) * 100);
+
+        console.log('[WindowManager] System info - Platform:', os.platform(), 'CPU:', cpuPercent, '% Memory:', memUsedGB, '/', memTotalGB, 'GB (', memPercent, '%)');
+
+        return {
+          cpuPercent: cpuPercent,
+          memUsedGB: memUsedGB,
+          memTotalGB: memTotalGB,
+          memPercent: memPercent
+        };
+      } catch (err) {
+        console.error('[WindowManager] Failed to get system info:', err);
+        return {
+          cpuPercent: 0,
+          memUsedGB: '0',
+          memTotalGB: '0',
+          memPercent: 0
+        };
+      }
     });
   }
 
@@ -139,14 +202,19 @@ class WindowManager {
   setupSettingsIPC() {
     ipcMain.removeHandler('get-settings');
     ipcMain.removeHandler('save-settings');
+    ipcMain.removeHandler('save-content-settings');
+    ipcMain.removeHandler('get-ball-speed');
 
     ipcMain.handle('get-settings', () => {
       return {
         idleTimeout: config.getIdleTimeout(),
         enabled: config.isEnabled(),
         launchAtLogin: config.getLaunchAtLogin(),
+        ballSizeMode: config.getBallSizeMode(),
         ballSize: config.getBallSize(),
-        ballOpacity: config.getBallOpacity()
+        ballOpacity: config.getBallOpacity(),
+        ballSpeed: config.getBallSpeed(),
+        content: config.getContentSettings()
       };
     });
 
@@ -164,12 +232,23 @@ class WindowManager {
           openAtLogin: settings.launchAtLogin
         });
       }
+      if (settings.ballSizeMode !== undefined) {
+        config.setBallSizeMode(settings.ballSizeMode);
+      }
       if (settings.ballSize !== undefined) {
         config.setBallSize(settings.ballSize);
       }
       if (settings.ballOpacity !== undefined) {
         config.setBallOpacity(settings.ballOpacity);
       }
+      if (settings.ballSpeed !== undefined) {
+        config.setBallSpeed(settings.ballSpeed);
+      }
+      return true;
+    });
+
+    ipcMain.handle('save-content-settings', (event, settings) => {
+      config.setContentSettings(settings);
       return true;
     });
   }

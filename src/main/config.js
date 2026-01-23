@@ -19,17 +19,50 @@ const schema = {
     type: 'boolean',
     default: false
   },
+  ballSizeMode: {
+    type: 'string',
+    enum: ['pixels', 'percentage'],
+    default: 'percentage'
+  },
   ballSize: {
     type: 'number',
     default: 10,
     minimum: 1,
-    maximum: 30
+    maximum: 500
   },
   ballOpacity: {
     type: 'number',
     default: 100,
     minimum: 10,
     maximum: 100
+  },
+  ballSpeed: {
+    type: 'number',
+    default: 100,
+    minimum: 25,
+    maximum: 300
+  },
+  contentRotation: {
+    type: 'object',
+    default: {
+      enabled: true,
+      intervalSeconds: 10,
+      enabledProviders: ['clock', 'stocks', 'system']
+    }
+  },
+  contentProviders: {
+    type: 'object',
+    default: {
+      clock: {
+        show24Hour: false
+      },
+      stocks: {
+        symbols: ['AAPL', 'GOOGL', 'TSLA']
+      },
+      system: {
+        showBattery: true
+      }
+    }
   }
 };
 
@@ -70,12 +103,20 @@ module.exports = {
     store.set('hasPromptedAutoStart', value);
   },
 
+  getBallSizeMode() {
+    return store.get('ballSizeMode');
+  },
+
+  setBallSizeMode(mode) {
+    store.set('ballSizeMode', mode);
+  },
+
   getBallSize() {
     return store.get('ballSize');
   },
 
-  setBallSize(percentage) {
-    store.set('ballSize', percentage);
+  setBallSize(value) {
+    store.set('ballSize', value);
   },
 
   getBallOpacity() {
@@ -84,5 +125,45 @@ module.exports = {
 
   setBallOpacity(percentage) {
     store.set('ballOpacity', percentage);
+  },
+
+  getBallSpeed() {
+    return store.get('ballSpeed');
+  },
+
+  setBallSpeed(percentage) {
+    store.set('ballSpeed', percentage);
+  },
+
+  getContentRotation() {
+    return store.get('contentRotation');
+  },
+
+  setContentRotation(settings) {
+    store.set('contentRotation', settings);
+  },
+
+  getContentProviders() {
+    return store.get('contentProviders');
+  },
+
+  setContentProviders(providers) {
+    store.set('contentProviders', providers);
+  },
+
+  getContentSettings() {
+    return {
+      rotation: store.get('contentRotation'),
+      providers: store.get('contentProviders')
+    };
+  },
+
+  setContentSettings(settings) {
+    if (settings.rotation) {
+      store.set('contentRotation', settings.rotation);
+    }
+    if (settings.providers) {
+      store.set('contentProviders', settings.providers);
+    }
   }
 };

@@ -3,8 +3,10 @@ const ctx = canvas.getContext('2d');
 
 let animationId = null;
 let ball = null;
-let ballSizePercentage = 10; // Default value
+let ballSizeMode = 'percentage'; // 'pixels' or 'percentage'
+let ballSizeValue = 10; // Value depends on mode
 let ballOpacityPercentage = 100; // Default value
+let ballSpeedPercentage = 100; // Default value
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -22,16 +24,23 @@ class BouncingBall {
     this.updateSize();
     this.x = canvas.width / 2;
     this.y = canvas.height / 2;
-    this.speedX = 4;
-    this.speedY = 3;
-    this.maxSpeed = 8;
+    // Base speed multiplied by speed percentage (100 = normal)
+    const speedMultiplier = ballSpeedPercentage / 100;
+    this.speedX = 4 * speedMultiplier;
+    this.speedY = 3 * speedMultiplier;
+    this.maxSpeed = 8 * speedMultiplier;
     this.hue = Math.random() * 360;
   }
 
   updateSize() {
-    // Ball size based on configured percentage of the smaller dimension
-    const minDim = Math.min(canvas.width, canvas.height);
-    this.radius = minDim * (ballSizePercentage / 100);
+    if (ballSizeMode === 'pixels') {
+      // Ball size in pixels
+      this.radius = ballSizeValue;
+    } else {
+      // Ball size as percentage of smaller dimension
+      const minDim = Math.min(canvas.width, canvas.height);
+      this.radius = minDim * (ballSizeValue / 100);
+    }
   }
 
   limitSpeed() {
@@ -94,7 +103,27 @@ class BouncingBall {
   }
 
   draw() {
-    // Draw ball with gradient and opacity
+    // Get content from current provider
+    const content = window.contentRotator ?
+      window.contentRotator.getCurrentProvider()?.getData() :
+      null;
+
+    // Debug logging (only log occasionally to avoid spam)
+    if (Math.random() < 0.01) {
+      console.log('[BouncingBall] Draw - contentRotator:', !!window.contentRotator, 'content:', content);
+    }
+
+    if (content) {
+      // Draw circle with content
+      this.drawWithContent(content);
+    } else {
+      // Fallback to original gradient ball
+      this.drawGradient();
+    }
+  }
+
+  drawGradient() {
+    // Original gradient drawing code
     const opacity = ballOpacityPercentage / 100;
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
@@ -112,6 +141,138 @@ class BouncingBall {
     ctx.fillStyle = gradient;
     ctx.fill();
   }
+
+  drawWithContent(content) {
+    const opacity = ballOpacityPercentage / 100;
+
+    // Draw circle background
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+
+    // Get background color from BackgroundProvider
+    const bgColor = window.backgroundProvider ?
+      window.backgroundProvider.getColor(this.hue) :
+      `hsl(${this.hue}, 70%, 30%)`;
+
+    // Debug: log occasionally
+    if (Math.random() < 0.01) {
+      console.log('[BouncingBall] hue:', this.hue, 'bgColor:', bgColor, 'provider:', !!window.backgroundProvider);
+    }
+
+    ctx.fillStyle = this.addOpacity(bgColor, opacity);
+    ctx.fill();
+
+    // Add subtle shadow/border
+    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw icon and text
+    this.drawContentText(content, opacity);
+  }
+
+  addOpacity(hexColor, opacity) {
+    // Convert hex to rgba with opacity
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  drawContentText(content, opacity) {
+    ctx.save();
+
+    // Set text properties
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Icon size and position (top of circle)
+    const iconSize = this.radius * 0.25;
+    ctx.font = `${iconSize}px Arial`;
+    const iconY = this.y - this.radius * 0.3;
+
+    // Draw icon with black stroke for visibility
+    ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+    ctx.lineWidth = Math.max(2, iconSize * 0.1);
+    ctx.strokeText(content.icon, this.x, iconY);
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+    ctx.fillText(content.icon, this.x, iconY);
+
+    // Text size and position (below icon)
+    const textSize = this.radius * 0.15;
+    ctx.font = `bold ${textSize}px Arial`;
+
+    // Handle multi-line text
+    const lines = content.text.split('\n');
+    const lineHeight = textSize * 1.2;
+    const textStartY = this.y + this.radius * 0.1;
+
+    lines.forEach((line, index) => {
+      const y = textStartY + (index * lineHeight);
+      // Draw text with black stroke for visibility
+      ctx.lineWidth = Math.max(2, textSize * 0.1);
+      ctx.strokeText(line, this.x, y);
+      ctx.fillText(line, this.x, y);
+    });
+
+    ctx.restore();
+  }
+}
+
+// Initialize content providers and rotator
+async function initContentProviders() {
+  try {
+    console.log('[Overlay] initContentProviders started');
+
+    // Import provider classes (using script tags in HTML)
+    const ClockProvider = window.ClockProvider;
+    const StockProvider = window.StockProvider;
+    const SystemInfoProvider = window.SystemInfoProvider;
+    const ContentRotator = window.ContentRotator;
+
+    console.log('[Overlay] Provider classes loaded:', { ClockProvider, StockProvider, SystemInfoProvider, ContentRotator });
+
+    // Get content settings from config
+    console.log('[Overlay] Fetching content settings...');
+    const contentSettings = await window.oledSaver.getContentSettings();
+    console.log('[Overlay] Content settings:', contentSettings);
+
+  const providers = [];
+
+  if (contentSettings.rotation.enabledProviders.includes('clock')) {
+    providers.push(new ClockProvider(contentSettings.providers.clock));
+  }
+
+  if (contentSettings.rotation.enabledProviders.includes('stocks')) {
+    providers.push(new StockProvider(contentSettings.providers.stocks));
+  }
+
+  if (contentSettings.rotation.enabledProviders.includes('system')) {
+    providers.push(new SystemInfoProvider(contentSettings.providers.system));
+  }
+
+  if (providers.length === 0) {
+    console.log('No content providers enabled, using gradient ball');
+    return;
+  }
+
+  if (contentSettings.rotation.enabled) {
+    window.contentRotator = new ContentRotator(
+      providers,
+      contentSettings.rotation.intervalSeconds
+    );
+    window.contentRotator.start();
+    console.log('[Overlay] Content rotator started with', providers.length, 'providers');
+  } else {
+    // Content rotation disabled, just use first provider
+    window.contentRotator = new ContentRotator(providers, 9999);
+    window.contentRotator.start();
+    console.log('[Overlay] Content rotator started (rotation disabled) with', providers.length, 'providers');
+  }
+  } catch (error) {
+    console.error('[Overlay] Error initializing content providers:', error);
+  }
 }
 
 function animate() {
@@ -127,18 +288,55 @@ function animate() {
 
 // Initialize
 async function init() {
-  ballSizePercentage = await window.oledSaver.getBallSize();
-  ballOpacityPercentage = await window.oledSaver.getBallOpacity();
-  ball = new BouncingBall();
-  animate();
+  console.log('[Overlay] init() started');
+  console.log('[Overlay] window.oledSaver available:', !!window.oledSaver);
+
+  try {
+    ballSizeMode = await window.oledSaver.getBallSizeMode();
+    ballSizeValue = await window.oledSaver.getBallSize();
+    ballOpacityPercentage = await window.oledSaver.getBallOpacity();
+    ballSpeedPercentage = await window.oledSaver.getBallSpeed();
+    console.log('[Overlay] Ball settings loaded:', { ballSizeMode, ballSizeValue, ballOpacityPercentage, ballSpeedPercentage });
+
+    // Initialize background provider (animated for OLED burn-in prevention)
+    window.backgroundProvider = new AnimatedBackgroundProvider({
+      saturation: 70,
+      lightness: 50  // Increased from 30 to make colors more visible
+    });
+    console.log('[Overlay] Background provider initialized');
+
+    ball = new BouncingBall();
+    console.log('[Overlay] BouncingBall created');
+
+    // Initialize content providers
+    await initContentProviders();
+    console.log('[Overlay] Content providers initialized');
+
+    animate();
+    console.log('[Overlay] Animation started');
+  } catch (error) {
+    console.error('[Overlay] Error during init:', error);
+  }
 }
 
+console.log('[Overlay] Script loaded, calling init()');
 init();
+
+// Listen for keyboard events to dismiss (for debug mode)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' || e.key === ' ') {
+    console.log('[Overlay] Keyboard dismiss triggered');
+    window.oledSaver.dismissOverlay();
+  }
+});
 
 // Listen for IPC events
 window.oledSaver.onFadeOut(() => {
   document.getElementById('container').classList.add('fade-out');
   if (animationId) {
     cancelAnimationFrame(animationId);
+  }
+  if (window.contentRotator) {
+    window.contentRotator.destroy();
   }
 });
