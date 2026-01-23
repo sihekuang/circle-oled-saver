@@ -4,6 +4,7 @@ class StockProvider extends window.ContentProvider {
   constructor(config = {}) {
     super(config);
     this.symbols = config.symbols || ['AAPL', 'GOOGL', 'TSLA'];
+    this.refreshSeconds = config.refreshSeconds || 300;
     this.currentIndex = 0;
     this.stockData = {}; // Cache: { symbol: { price, change, changePercent } }
   }
@@ -90,7 +91,7 @@ class StockProvider extends window.ContentProvider {
   }
 
   getRefreshInterval() {
-    return 300000; // Fetch every 5 minutes to reduce rate limiting
+    return this.refreshSeconds * 1000;
   }
 }
 

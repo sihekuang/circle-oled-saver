@@ -57,6 +57,9 @@ async function loadSettings() {
 
     // Stock settings
     document.getElementById('stock-symbols').value = providers.stocks.symbols.join(', ');
+    const refreshSeconds = providers.stocks.refreshSeconds || 300;
+    document.getElementById('stock-refresh').value = refreshSeconds;
+    document.getElementById('stock-refresh-value').value = refreshSeconds;
 
     // System settings
     document.getElementById('system-show-battery').checked = providers.system.showBattery;
@@ -137,7 +140,8 @@ async function saveSettings() {
         symbols: document.getElementById('stock-symbols').value
           .split(',')
           .map(s => s.trim())
-          .filter(s => s.length > 0)
+          .filter(s => s.length > 0),
+        refreshSeconds: parseInt(document.getElementById('stock-refresh').value) || 300
       },
       system: {
         showBattery: document.getElementById('system-show-battery').checked
@@ -238,6 +242,14 @@ document.getElementById('rotation-interval').addEventListener('input', (e) => {
   document.getElementById('rotation-interval-value').textContent = `${e.target.value}s`;
 });
 
+document.getElementById('stock-refresh').addEventListener('input', (e) => {
+  document.getElementById('stock-refresh-value').value = e.target.value;
+});
+
+document.getElementById('stock-refresh-value').addEventListener('input', (e) => {
+  document.getElementById('stock-refresh').value = e.target.value;
+});
+
 // Save content settings when any content input changes
 const contentInputs = [
   'content-rotation-enabled',
@@ -248,6 +260,7 @@ const contentInputs = [
   'clock-bg-color',
   'clock-24hour',
   'stock-symbols',
+  'stock-refresh',
   'stock-bg-color',
   'stock-auto-color',
   'system-bg-color',

@@ -122,6 +122,11 @@
         <h3>Stock Ticker Settings</h3>
         <label for="stock-symbols">Stock Symbols (comma-separated)</label>
         <input type="text" id="stock-symbols" placeholder="AAPL, GOOGL, TSLA">
+        <label for="stock-refresh" style="margin-top: 12px; display: block;">Refresh interval</label>
+        <div class="timeout-input">
+          <input type="range" id="stock-refresh" min="5" max="300" step="5" value="300">
+          <input type="number" id="stock-refresh-value" min="5" max="300" step="5" value="300"> seconds
+        </div>
       </div>
 
       <div class="setting-group">
