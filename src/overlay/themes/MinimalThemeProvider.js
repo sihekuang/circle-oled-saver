@@ -10,9 +10,10 @@ class MinimalThemeProvider extends window.ThemeProvider {
   }
 
   getColor(hue, time) {
-    // Monochromatic - slow shift within narrow range
-    const shift = Math.sin(time / 30000) * 10; // ±10° over 30s
-    const h = (this.baseHue + shift) % 360;
+    // Use the actual hue (which shifts over time) for burn-in prevention
+    // Add subtle oscillation for extra variation while keeping minimal aesthetic
+    const shift = Math.sin(time / 10000) * 5; // ±5° gentle oscillation
+    const h = (hue + shift + 360) % 360;
     return `hsl(${h}, 30%, 60%)`;
   }
 
@@ -28,7 +29,9 @@ class MinimalThemeProvider extends window.ThemeProvider {
 
     let newX = x + newVx;
     let newY = y + newVy;
-    let newHue = hue;
+
+    // Continuous slow hue shift for burn-in prevention (even without hitting edges)
+    let newHue = (hue + 0.1) % 360;
 
     // Soft edge avoidance - curve away from edges
     const margin = radius * 2;
@@ -36,21 +39,21 @@ class MinimalThemeProvider extends window.ThemeProvider {
     if (newX < margin) {
       this.angle = this.angle * 0.9; // Curve right
       newX = margin;
-      newHue = (hue + 5) % 360;
+      newHue = (hue + 20) % 360; // Larger shift on edge hit
     } else if (newX > bounds.width - margin) {
       this.angle = Math.PI - this.angle * 0.9; // Curve left
       newX = bounds.width - margin;
-      newHue = (hue + 5) % 360;
+      newHue = (hue + 20) % 360;
     }
 
     if (newY < margin) {
       this.angle = -this.angle * 0.9; // Curve down
       newY = margin;
-      newHue = (hue + 5) % 360;
+      newHue = (hue + 20) % 360;
     } else if (newY > bounds.height - margin) {
       this.angle = -this.angle * 0.9; // Curve up
       newY = bounds.height - margin;
-      newHue = (hue + 5) % 360;
+      newHue = (hue + 20) % 360;
     }
 
     return { x: newX, y: newY, vx: newVx, vy: newVy, hue: newHue };
