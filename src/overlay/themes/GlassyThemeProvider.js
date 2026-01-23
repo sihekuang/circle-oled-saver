@@ -99,14 +99,14 @@ class GlassyThemeProvider extends window.ThemeProvider {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
 
-    // Frosted glass gradient
+    // Frosted glass gradient - can reach full opacity
     const glassGradient = ctx.createRadialGradient(
       x - radius * 0.3, y - radius * 0.3, 0,
       x, y, radius
     );
-    glassGradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.25})`);
-    glassGradient.addColorStop(0.5, this.addOpacity(baseColor, opacity * 0.6));
-    glassGradient.addColorStop(1, this.addOpacity(baseColor, opacity * 0.4));
+    glassGradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.5})`);
+    glassGradient.addColorStop(0.5, this.addOpacity(baseColor, opacity));
+    glassGradient.addColorStop(1, this.addOpacity(baseColor, opacity * 0.85));
 
     ctx.fillStyle = glassGradient;
     ctx.fill();
