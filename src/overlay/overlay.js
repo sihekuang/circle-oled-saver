@@ -74,7 +74,12 @@ class BouncingBall {
       } else {
         // Bounce with random angle variation
         this.speedX = -this.speedX;
-        this.speedY += (Math.random() - 0.5) * 2;
+        // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
+        if (Math.random() < 0.2) {
+          this.speedY = (Math.random() - 0.5) * this.maxSpeed * 1.5;
+        } else {
+          this.speedY += (Math.random() - 0.5) * 6;
+        }
         this.limitSpeed();
         this.hue = (this.hue + 30) % 360;
       }
@@ -95,7 +100,12 @@ class BouncingBall {
       } else {
         // Bounce with random angle variation
         this.speedY = -this.speedY;
-        this.speedX += (Math.random() - 0.5) * 2;
+        // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
+        if (Math.random() < 0.2) {
+          this.speedX = (Math.random() - 0.5) * this.maxSpeed * 1.5;
+        } else {
+          this.speedX += (Math.random() - 0.5) * 6;
+        }
         this.limitSpeed();
         this.hue = (this.hue + 30) % 360;
       }
