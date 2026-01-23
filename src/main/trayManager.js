@@ -14,7 +14,7 @@ class TrayManager {
     this.onQuitClick = onQuitClick;
     this.onTestOverlayClick = onTestOverlayClick;
 
-    const iconPath = path.join(__dirname, '../../build/trayTemplate.png');
+    const iconPath = path.join(__dirname, '../../assets/trayTemplate.png');
 
     // Create a simple icon if the file doesn't exist
     let icon;

@@ -15,19 +15,19 @@
     "appId": "com.circle.app",
     "productName": "Circle",
     "mac": {
-      "icon": "build/icon.icns",
+      "icon": "assets/icon.icns",
       "category": "public.app-category.utilities"
     },
     "win": {
-      "icon": "build/icon.png"
+      "icon": "assets/icon.png"
     },
     "linux": {
-      "icon": "build/icon.png"
+      "icon": "assets/icon.png"
     },
     "files": [
       "src/**/*",
-      "build/trayTemplate.png",
-      "build/trayTemplate@2x.png"
+      "assets/trayTemplate.png",
+      "assets/trayTemplate@2x.png"
     ]
   },
   "keywords": [
