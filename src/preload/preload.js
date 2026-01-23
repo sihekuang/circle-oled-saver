@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld('oledSaver', {
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
   getContentSettings: () => ipcRenderer.invoke('get-content-settings'),
   saveContentSettings: (settings) => ipcRenderer.invoke('save-content-settings', settings),
+  getTheme: () => ipcRenderer.invoke('get-theme'),
+  saveTheme: (themeId) => ipcRenderer.invoke('save-theme', themeId),
 
   // Event listeners
   onFadeOut: (callback) => {
