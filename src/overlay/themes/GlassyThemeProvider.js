@@ -9,10 +9,16 @@ class GlassyThemeProvider extends window.ThemeProvider {
   }
 
   getColor(hue, time) {
-    // Muted, sophisticated tones - slow shift
-    this.hueShift = (time / 25000) % 360; // Full cycle over 25s
-    const h = (200 + this.hueShift * 0.3) % 360; // Stay in blue-gray range
-    return `hsl(${h}, 15%, 45%)`; // Low saturation, medium lightness
+    // Use actual hue (changes on bounces) for full spectrum coverage
+    // Add slow continuous shift for burn-in prevention
+    const continuousShift = (time / 50) % 360; // Slow continuous rotation
+    const h = (hue + continuousShift * 0.1) % 360;
+    return `hsl(${h}, 25%, 50%)`; // Slightly more saturation for visibility
+  }
+
+  getOpacityMultiplier(time) {
+    // Slowly pulse opacity between 0.7 and 1.0 for burn-in prevention
+    return 0.85 + Math.sin(time / 5000) * 0.15;
   }
 
   updateMotion(state, bounds) {
@@ -43,7 +49,8 @@ class GlassyThemeProvider extends window.ThemeProvider {
 
     let newX = x + newVx;
     let newY = y + newVy;
-    let newHue = hue;
+    // Continuous slow hue shift for burn-in prevention
+    let newHue = (hue + 0.15) % 360;
 
     // Bounce from center point (circle goes partially off-screen)
     const margin = 0;
@@ -76,7 +83,8 @@ class GlassyThemeProvider extends window.ThemeProvider {
   }
 
   draw(ctx, state, time, content) {
-    const { x, y, radius, hue, opacity } = state;
+    const { x, y, radius, hue, opacity: baseOpacity } = state;
+    const opacity = baseOpacity * this.getOpacityMultiplier(time);
     const baseColor = this.getColor(hue, time);
 
     ctx.save();
