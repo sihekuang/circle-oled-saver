@@ -184,7 +184,7 @@ class WindowManager {
       height: 400,
       minWidth: 400,
       minHeight: 300,
-      title: 'OLED Saver Settings',
+      title: 'Circle Settings',
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
         contextIsolation: true,

@@ -14,7 +14,7 @@ class TrayManager {
     this.onQuitClick = onQuitClick;
     this.onTestOverlayClick = onTestOverlayClick;
 
-    const iconPath = path.join(__dirname, '../../assets/iconTemplate.png');
+    const iconPath = path.join(__dirname, '../../build/trayTemplate.png');
 
     // Create a simple icon if the file doesn't exist
     let icon;
@@ -28,7 +28,7 @@ class TrayManager {
     }
 
     this.tray = new Tray(icon);
-    this.tray.setToolTip('OLED Saver');
+    this.tray.setToolTip('Circle');
 
     this.updateMenu();
 

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Circle icon">
+    <!--
+      Tray-optimized version (no rays)
+      Editables:
+        - Outer ring stroke-width: 36
+        - Inner strokes stroke-width: 34
+    -->
+
+    <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Outer circle -->
+        <circle cx="256" cy="256" r="150" stroke-width="36"/>
+
+        <!-- Inner sweeping strokes -->
+        <g id="inner" stroke-width="34">
+            <!-- Upper sweep -->
+            <path d="M 150 260
+               C 220 200, 315 175, 382 205" />
+            <!-- Lower sweep -->
+            <path d="M 162 320
+               C 235 270, 325 250, 402 270" />
+        </g>
+    </g>
+</svg>

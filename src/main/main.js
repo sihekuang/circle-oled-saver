@@ -69,8 +69,8 @@ async function promptAutoStart() {
     type: 'question',
     buttons: ['Yes', 'No'],
     defaultId: 0,
-    title: 'OLED Saver',
-    message: 'Would you like OLED Saver to start automatically when you log in?'
+    title: 'Circle',
+    message: 'Would you like Circle to start automatically when you log in?'
   });
 
   config.setHasPromptedAutoStart(true);
