@@ -14,26 +14,30 @@ class AbstractThemeProvider extends window.ThemeProvider {
         hueOffset: i * 45
       });
     }
-    this.gravity = 0.05;
     this.baseHue = Math.random() * 360;
   }
 
   getColor(hue, time) {
-    // Vibrant with color harmony (triadic)
-    this.baseHue = (this.baseHue + 0.02) % 360;
+    // Use actual hue (changes on bounces) + continuous shift for full spectrum
+    this.baseHue = (hue + time * 0.01) % 360;
     return `hsl(${this.baseHue}, 70%, 55%)`;
+  }
+
+  getOpacityMultiplier(time) {
+    // Pulse opacity between 0.6 and 1.0 for burn-in prevention
+    return 0.8 + Math.sin(time / 3000) * 0.2;
   }
 
   updateMotion(state, bounds) {
     const { x, y, vx, vy, radius, hue } = state;
 
-    // Very subtle gravity for slight arc effect, but not enough to settle
+    // No gravity - bounces freely across entire screen (top, middle, bottom)
     let newVx = vx;
-    let newVy = vy + this.gravity * 0.3;
+    let newVy = vy;
 
     // Ensure minimum speed so it keeps moving around the screen
     const speed = Math.sqrt(newVx * newVx + newVy * newVy);
-    const minSpeed = 2;
+    const minSpeed = 2.5;
     const maxSpeed = 4;
 
     if (speed < minSpeed) {
@@ -49,7 +53,8 @@ class AbstractThemeProvider extends window.ThemeProvider {
 
     let newX = x + newVx;
     let newY = y + newVy;
-    let newHue = hue;
+    // Continuous hue shift for burn-in prevention
+    let newHue = (hue + 0.2) % 360;
 
     // Bounce from center point (circle goes partially off-screen)
     const margin = 0;
@@ -88,7 +93,8 @@ class AbstractThemeProvider extends window.ThemeProvider {
   }
 
   draw(ctx, state, time, content) {
-    const { x, y, radius, hue, opacity } = state;
+    const { x, y, radius, hue, opacity: baseOpacity } = state;
+    const opacity = baseOpacity * this.getOpacityMultiplier(time);
 
     ctx.save();
 
