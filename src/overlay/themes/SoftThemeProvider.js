@@ -65,18 +65,20 @@ class SoftThemeProvider extends window.ThemeProvider {
     let newY = y + newVy;
     let newHue = hue;
 
-    // Elastic bounce with squish
-    const margin = radius;
+    // Bounce from center point (circle goes partially off-screen)
+    const margin = 0;
 
     if (newX < margin || newX > bounds.width - margin) {
-      newVx = -newVx * 0.9; // Elastic damping
+      newVx = -newVx; // Full energy preservation
+      newVy += (Math.random() - 0.5) * 0.5; // Slight angle variation
       this.squishTarget = 0.7; // Trigger squish
       newX = Math.max(margin, Math.min(bounds.width - margin, newX));
       newHue = (hue + 20) % 360;
     }
 
     if (newY < margin || newY > bounds.height - margin) {
-      newVy = -newVy * 0.9;
+      newVy = -newVy;
+      newVx += (Math.random() - 0.5) * 0.5;
       this.squishTarget = 0.7;
       newY = Math.max(margin, Math.min(bounds.height - margin, newY));
       newHue = (hue + 20) % 360;

@@ -51,8 +51,8 @@ class AbstractThemeProvider extends window.ThemeProvider {
     let newY = y + newVy;
     let newHue = hue;
 
-    // Bounce with full energy preservation to keep moving
-    const margin = radius;
+    // Bounce from center point (circle goes partially off-screen)
+    const margin = 0;
 
     if (newX < margin || newX > bounds.width - margin) {
       newVx = -newVx;

@@ -45,27 +45,31 @@ class GlassyThemeProvider extends window.ThemeProvider {
     let newY = y + newVy;
     let newHue = hue;
 
-    // Soft edge behavior - decelerate, pause, drift away
-    const margin = radius * 1.5;
+    // Bounce from center point (circle goes partially off-screen)
+    const margin = 0;
 
     if (newX < margin) {
-      newVx = Math.abs(newVx) * 0.5; // Gentle push back
+      newVx = Math.abs(newVx); // Bounce right
+      newVy += (Math.random() - 0.5) * 0.3; // Slight angle variation
       newX = margin;
-      newHue = (hue + 10) % 360;
+      newHue = (hue + 15) % 360;
     } else if (newX > bounds.width - margin) {
-      newVx = -Math.abs(newVx) * 0.5;
+      newVx = -Math.abs(newVx); // Bounce left
+      newVy += (Math.random() - 0.5) * 0.3;
       newX = bounds.width - margin;
-      newHue = (hue + 10) % 360;
+      newHue = (hue + 15) % 360;
     }
 
     if (newY < margin) {
-      newVy = Math.abs(newVy) * 0.5;
+      newVy = Math.abs(newVy); // Bounce down
+      newVx += (Math.random() - 0.5) * 0.3;
       newY = margin;
-      newHue = (hue + 10) % 360;
+      newHue = (hue + 15) % 360;
     } else if (newY > bounds.height - margin) {
-      newVy = -Math.abs(newVy) * 0.5;
+      newVy = -Math.abs(newVy); // Bounce up
+      newVx += (Math.random() - 0.5) * 0.3;
       newY = bounds.height - margin;
-      newHue = (hue + 10) % 360;
+      newHue = (hue + 15) % 360;
     }
 
     return { x: newX, y: newY, vx: newVx, vy: newVy, hue: newHue };
