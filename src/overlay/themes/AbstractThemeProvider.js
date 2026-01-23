@@ -138,8 +138,8 @@ class AbstractThemeProvider extends window.ThemeProvider {
         x - layerRadius * 0.2, y - layerRadius * 0.2, 0,
         x, y, layerRadius
       );
-      gradient.addColorStop(0, `hsla(${layerHue}, 70%, 65%, ${opacity * 0.8})`);
-      gradient.addColorStop(1, `hsla(${layerHue}, 70%, 45%, ${opacity * 0.6})`);
+      gradient.addColorStop(0, `hsla(${layerHue}, 70%, 65%, ${opacity})`);
+      gradient.addColorStop(1, `hsla(${layerHue}, 70%, 45%, ${opacity * 0.85})`);
 
       ctx.fillStyle = gradient;
       ctx.fill();
@@ -148,7 +148,7 @@ class AbstractThemeProvider extends window.ThemeProvider {
     // Central bright core
     ctx.beginPath();
     ctx.arc(x, y, radius * 0.2, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
     ctx.fill();
 
     ctx.restore();
