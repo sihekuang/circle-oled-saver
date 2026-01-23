@@ -82,6 +82,8 @@ class WindowManager {
     ipcMain.removeHandler('get-ball-speed');
     ipcMain.removeHandler('get-content-settings');
     ipcMain.removeHandler('get-system-info');
+    ipcMain.removeHandler('get-theme');
+    ipcMain.removeHandler('save-theme');
 
     ipcMain.handle('dismiss-overlay', () => {
       this.dismissOverlays();
@@ -105,6 +107,14 @@ class WindowManager {
 
     ipcMain.handle('get-content-settings', () => {
       return config.getContentSettings();
+    });
+
+    ipcMain.handle('get-theme', () => {
+      return config.getTheme();
+    });
+
+    ipcMain.handle('save-theme', (event, themeId) => {
+      config.setTheme(themeId);
     });
 
     ipcMain.handle('get-system-info', async () => {
@@ -218,7 +228,8 @@ class WindowManager {
         ballSize: config.getBallSize(),
         ballOpacity: config.getBallOpacity(),
         ballSpeed: config.getBallSpeed(),
-        content: config.getContentSettings()
+        content: config.getContentSettings(),
+        theme: config.getTheme()
       };
     });
 
@@ -247,6 +258,9 @@ class WindowManager {
       }
       if (settings.ballSpeed !== undefined) {
         config.setBallSpeed(settings.ballSpeed);
+      }
+      if (settings.theme !== undefined) {
+        config.setTheme(settings.theme);
       }
       return true;
     });
