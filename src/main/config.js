@@ -42,6 +42,11 @@ const schema = {
     minimum: 25,
     maximum: 300
   },
+  theme: {
+    type: 'string',
+    enum: ['minimal', 'soft', 'glassy', 'abstract'],
+    default: 'minimal'
+  },
   contentRotation: {
     type: 'object',
     default: {
@@ -133,6 +138,14 @@ module.exports = {
 
   setBallSpeed(percentage) {
     store.set('ballSpeed', percentage);
+  },
+
+  getTheme() {
+    return store.get('theme');
+  },
+
+  setTheme(themeId) {
+    store.set('theme', themeId);
   },
 
   getContentRotation() {
