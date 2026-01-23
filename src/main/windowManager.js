@@ -109,13 +109,22 @@ class WindowManager {
         const cpuData = await si.currentLoad();
         const cpuPercent = Math.round(cpuData.currentLoad);
 
-        // Get memory info with available memory
+        // Get memory info
         const memData = await si.mem();
-        const memPercent = Math.round((memData.used / memData.total) * 100);
-        const memUsedGB = (memData.used / 1024 / 1024 / 1024).toFixed(1);
-        const memTotalGB = (memData.total / 1024 / 1024 / 1024).toFixed(1);
 
-        console.log('[WindowManager] System info - CPU:', cpuPercent, '% Memory:', memUsedGB, '/', memTotalGB, 'GB (', memPercent, '%)');
+        // On macOS, use 'active' memory (excludes cache/buffers)
+        // On other platforms, use 'used'
+        // 'active' represents memory actually used by applications (App Memory in Activity Monitor)
+        // 'used' includes cached files that can be freed
+        const os = require('os');
+        const isMac = os.platform() === 'darwin';
+        const memUsed = isMac && memData.active ? memData.active : memData.used;
+
+        const memUsedGB = (memUsed / 1024 / 1024 / 1024).toFixed(1);
+        const memTotalGB = (memData.total / 1024 / 1024 / 1024).toFixed(1);
+        const memPercent = Math.round((memUsed / memData.total) * 100);
+
+        console.log('[WindowManager] System info - Platform:', os.platform(), 'CPU:', cpuPercent, '% Memory:', memUsedGB, '/', memTotalGB, 'GB (', memPercent, '%)');
 
         return {
           cpuPercent: cpuPercent,
