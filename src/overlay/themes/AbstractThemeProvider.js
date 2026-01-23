@@ -24,8 +24,8 @@ class AbstractThemeProvider extends window.ThemeProvider {
   }
 
   getOpacityMultiplier(time) {
-    // Pulse opacity between 0.6 and 1.0 for burn-in prevention
-    return 0.8 + Math.sin(time / 3000) * 0.2;
+    // Pulse opacity between 0.3 and 1.0 (full opaque) for burn-in prevention
+    return 0.65 + Math.sin(time / 4000) * 0.35;
   }
 
   updateMotion(state, bounds) {
