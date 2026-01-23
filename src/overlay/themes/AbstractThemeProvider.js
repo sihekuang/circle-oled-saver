@@ -27,39 +27,46 @@ class AbstractThemeProvider extends window.ThemeProvider {
   updateMotion(state, bounds) {
     const { x, y, vx, vy, radius, hue } = state;
 
-    // Gravity-aware parabolic arcs
+    // Very subtle gravity for slight arc effect, but not enough to settle
     let newVx = vx;
-    let newVy = vy + this.gravity; // Add gravity
+    let newVy = vy + this.gravity * 0.3;
 
-    // Limit speed
-    const maxSpeed = 4;
+    // Ensure minimum speed so it keeps moving around the screen
     const speed = Math.sqrt(newVx * newVx + newVy * newVy);
-    if (speed > maxSpeed) {
-      newVx = (newVx / speed) * maxSpeed;
-      newVy = (newVy / speed) * maxSpeed;
+    const minSpeed = 2;
+    const maxSpeed = 4;
+
+    if (speed < minSpeed) {
+      // Re-energize if too slow
+      const factor = minSpeed / speed;
+      newVx *= factor;
+      newVy *= factor;
+    } else if (speed > maxSpeed) {
+      const factor = maxSpeed / speed;
+      newVx *= factor;
+      newVy *= factor;
     }
 
     let newX = x + newVx;
     let newY = y + newVy;
     let newHue = hue;
 
-    // Bounce with energy preservation
+    // Bounce with full energy preservation to keep moving
     const margin = radius;
 
     if (newX < margin || newX > bounds.width - margin) {
-      newVx = -newVx * 0.95;
+      newVx = -newVx;
+      // Add angle variation to prevent repetitive patterns
+      newVy += (Math.random() - 0.5) * 1.5;
       newX = Math.max(margin, Math.min(bounds.width - margin, newX));
       newHue = (hue + 30) % 360;
-      // Trigger particle burst effect
       this.triggerBurst();
     }
 
     if (newY < margin || newY > bounds.height - margin) {
-      newVy = -newVy * 0.9;
-      // Add slight horizontal variance on ground bounce
-      if (newY > bounds.height - margin) {
-        newVx += (Math.random() - 0.5) * 2;
-      }
+      newVy = -newVy;
+      // Add angle variation
+      newVx += (Math.random() - 0.5) * 1.5;
       newY = Math.max(margin, Math.min(bounds.height - margin, newY));
       newHue = (hue + 30) % 360;
       this.triggerBurst();
