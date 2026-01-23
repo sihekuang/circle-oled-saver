@@ -10,6 +10,7 @@ const ballOpacityValueInput = document.getElementById('ball-opacity-value');
 const ballSpeedSlider = document.getElementById('ball-speed');
 const ballSpeedValueInput = document.getElementById('ball-speed-value');
 const launchAtLoginCheckbox = document.getElementById('launch-at-login');
+const themeCards = document.querySelectorAll('.theme-card');
 
 async function loadSettings() {
   const settings = await window.oledSaver.getSettings();
@@ -36,6 +37,12 @@ async function loadSettings() {
   ballSpeedValueInput.value = settings.ballSpeed;
 
   launchAtLoginCheckbox.checked = settings.launchAtLogin;
+
+  // Theme setting
+  const currentTheme = settings.theme || 'minimal';
+  themeCards.forEach(card => {
+    card.classList.toggle('active', card.dataset.theme === currentTheme);
+  });
 
   // Content settings
   if (settings.content) {
@@ -274,6 +281,20 @@ contentInputs.forEach(id => {
                       element.type === 'text' ? 'blur' : 'change';
     element.addEventListener(eventType, saveSettings);
   }
+});
+
+// Theme selection
+themeCards.forEach(card => {
+  card.addEventListener('click', async () => {
+    const themeId = card.dataset.theme;
+
+    // Update UI
+    themeCards.forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+
+    // Save setting
+    await window.oledSaver.saveSettings({ theme: themeId });
+  });
 });
 
 // Initialize
