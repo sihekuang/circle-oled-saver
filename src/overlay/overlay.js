@@ -7,6 +7,7 @@ let ballSizeMode = 'percentage'; // 'pixels' or 'percentage'
 let ballSizeValue = 10; // Value depends on mode
 let ballOpacityPercentage = 100; // Default value
 let ballSpeedPercentage = 100; // Default value
+let lastFrameTime = performance.now();
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -53,6 +54,31 @@ class BouncingBall {
   }
 
   update() {
+    if (window.themeProvider) {
+      const result = window.themeProvider.updateMotion(
+        {
+          x: this.x,
+          y: this.y,
+          vx: this.speedX,
+          vy: this.speedY,
+          radius: this.radius,
+          hue: this.hue
+        },
+        { width: canvas.width, height: canvas.height }
+      );
+      this.x = result.x;
+      this.y = result.y;
+      this.speedX = result.vx;
+      this.speedY = result.vy;
+      if (result.hue !== undefined) {
+        this.hue = result.hue;
+      }
+    } else {
+      this.legacyUpdate();
+    }
+  }
+
+  legacyUpdate() {
     this.x += this.speedX;
     this.y += this.speedY;
 
@@ -121,22 +147,30 @@ class BouncingBall {
   }
 
   draw() {
-    // Get content from current provider
     const content = window.contentRotator ?
       window.contentRotator.getCurrentProvider()?.getData() :
       null;
 
-    // Debug logging (only log occasionally to avoid spam)
-    if (Math.random() < 0.01) {
-      console.log('[BouncingBall] Draw - contentRotator:', !!window.contentRotator, 'content:', content);
-    }
-
-    if (content) {
-      // Draw circle with content
-      this.drawWithContent(content);
+    if (window.themeProvider) {
+      window.themeProvider.draw(
+        ctx,
+        {
+          x: this.x,
+          y: this.y,
+          radius: this.radius,
+          hue: this.hue,
+          opacity: ballOpacityPercentage / 100
+        },
+        performance.now(),
+        content
+      );
     } else {
-      // Fallback to original gradient ball
-      this.drawGradient();
+      // Fallback to legacy drawing
+      if (content) {
+        this.drawWithContent(content);
+      } else {
+        this.drawGradient();
+      }
     }
   }
 
@@ -294,7 +328,15 @@ async function initContentProviders() {
 }
 
 function animate() {
+  const now = performance.now();
+  const deltaTime = now - lastFrameTime;
+  lastFrameTime = now;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (window.themeProvider) {
+    window.themeProvider.tick(deltaTime);
+  }
 
   if (ball) {
     ball.update();
@@ -315,6 +357,18 @@ async function init() {
     ballOpacityPercentage = await window.oledSaver.getBallOpacity();
     ballSpeedPercentage = await window.oledSaver.getBallSpeed();
     console.log('[Overlay] Ball settings loaded:', { ballSizeMode, ballSizeValue, ballOpacityPercentage, ballSpeedPercentage });
+
+    // Initialize theme provider
+    const themeId = await window.oledSaver.getTheme();
+    const ThemeClass = {
+      'minimal': window.MinimalThemeProvider,
+      'soft': window.SoftThemeProvider,
+      'glassy': window.GlassyThemeProvider,
+      'abstract': window.AbstractThemeProvider
+    }[themeId] || window.MinimalThemeProvider;
+
+    window.themeProvider = new ThemeClass();
+    console.log('[Overlay] Theme provider initialized:', themeId);
 
     // Initialize background provider (animated for OLED burn-in prevention)
     window.backgroundProvider = new AnimatedBackgroundProvider({
