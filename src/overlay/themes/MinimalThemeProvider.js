@@ -19,7 +19,7 @@ class MinimalThemeProvider extends window.ThemeProvider {
 
   updateMotion(state, bounds) {
     const { x, y, vx, vy, radius, hue } = state;
-    const speed = 1.5; // Slow drift
+    const speed = 2; // Slightly faster to cover more area
 
     // Smooth drift - gradual angle changes
     this.angle += (Math.random() - 0.5) * 0.02;
@@ -30,28 +30,32 @@ class MinimalThemeProvider extends window.ThemeProvider {
     let newX = x + newVx;
     let newY = y + newVy;
 
-    // Continuous slow hue shift for burn-in prevention (even without hitting edges)
+    // Continuous slow hue shift for burn-in prevention
     let newHue = (hue + 0.1) % 360;
 
-    // Soft edge avoidance - curve away from edges
-    const margin = radius * 2;
+    // Bounce off edges - use small margin so it reaches the edges
+    const margin = radius;
 
     if (newX < margin) {
-      this.angle = this.angle * 0.9; // Curve right
+      this.angle = Math.PI - this.angle; // Reflect horizontally
+      this.angle += (Math.random() - 0.5) * 0.5; // Add slight randomness
       newX = margin;
-      newHue = (hue + 20) % 360; // Larger shift on edge hit
+      newHue = (hue + 20) % 360;
     } else if (newX > bounds.width - margin) {
-      this.angle = Math.PI - this.angle * 0.9; // Curve left
+      this.angle = Math.PI - this.angle;
+      this.angle += (Math.random() - 0.5) * 0.5;
       newX = bounds.width - margin;
       newHue = (hue + 20) % 360;
     }
 
     if (newY < margin) {
-      this.angle = -this.angle * 0.9; // Curve down
+      this.angle = -this.angle; // Reflect vertically
+      this.angle += (Math.random() - 0.5) * 0.5;
       newY = margin;
       newHue = (hue + 20) % 360;
     } else if (newY > bounds.height - margin) {
-      this.angle = -this.angle * 0.9; // Curve up
+      this.angle = -this.angle;
+      this.angle += (Math.random() - 0.5) * 0.5;
       newY = bounds.height - margin;
       newHue = (hue + 20) % 360;
     }
