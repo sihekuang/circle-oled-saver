@@ -17,8 +17,8 @@ class GlassyThemeProvider extends window.ThemeProvider {
   }
 
   getOpacityMultiplier(time) {
-    // Slowly pulse opacity between 0.7 and 1.0 for burn-in prevention
-    return 0.85 + Math.sin(time / 5000) * 0.15;
+    // Pulse opacity between 0.3 and 1.0 (full opaque) for burn-in prevention
+    return 0.65 + Math.sin(time / 4000) * 0.35;
   }
 
   updateMotion(state, bounds) {
