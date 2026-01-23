@@ -46,6 +46,10 @@ class WindowManager {
       // Make clicks pass through to windows below
       overlay.setIgnoreMouseEvents(true, { forward: true });
 
+      // Set to screen-saver level to appear above menu bar and dock on macOS
+      overlay.setAlwaysOnTop(true, 'screen-saver');
+      overlay.setVisibleOnAllWorkspaces(true);
+
       overlay.loadFile(path.join(__dirname, '../overlay/overlay.html'));
 
       // Show without focusing to avoid bringing settings window forward
