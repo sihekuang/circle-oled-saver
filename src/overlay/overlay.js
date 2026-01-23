@@ -62,7 +62,8 @@ class BouncingBall {
           vx: this.speedX,
           vy: this.speedY,
           radius: this.radius,
-          hue: this.hue
+          hue: this.hue,
+          speedMultiplier: ballSpeedPercentage / 100
         },
         { width: canvas.width, height: canvas.height }
       );

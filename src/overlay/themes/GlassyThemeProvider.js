@@ -22,16 +22,17 @@ class GlassyThemeProvider extends window.ThemeProvider {
   }
 
   updateMotion(state, bounds) {
-    const { x, y, vx, vy, radius, hue } = state;
+    const { x, y, vx, vy, radius, hue, speedMultiplier = 1 } = state;
+    const baseSpeed = 3;
 
     // Apply inertia - feels weighted
     let newVx = vx * this.inertia;
     let newVy = vy * this.inertia;
 
-    // Maintain minimum speed
+    // Maintain minimum speed (uniform with other themes)
     const speed = Math.sqrt(newVx * newVx + newVy * newVy);
-    const minSpeed = 0.8;
-    const maxSpeed = 2;
+    const minSpeed = baseSpeed * 0.5 * speedMultiplier;
+    const maxSpeed = baseSpeed * 1.5 * speedMultiplier;
 
     if (speed < minSpeed) {
       const factor = minSpeed / speed;

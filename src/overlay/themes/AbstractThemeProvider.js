@@ -29,16 +29,17 @@ class AbstractThemeProvider extends window.ThemeProvider {
   }
 
   updateMotion(state, bounds) {
-    const { x, y, vx, vy, radius, hue } = state;
+    const { x, y, vx, vy, radius, hue, speedMultiplier = 1 } = state;
+    const baseSpeed = 3;
 
     // No gravity - bounces freely across entire screen (top, middle, bottom)
     let newVx = vx;
     let newVy = vy;
 
-    // Ensure minimum speed so it keeps moving around the screen
+    // Ensure minimum speed (uniform with other themes)
     const speed = Math.sqrt(newVx * newVx + newVy * newVy);
-    const minSpeed = 2.5;
-    const maxSpeed = 4;
+    const minSpeed = baseSpeed * 0.5 * speedMultiplier;
+    const maxSpeed = baseSpeed * 1.5 * speedMultiplier;
 
     if (speed < minSpeed) {
       // Re-energize if too slow

@@ -39,8 +39,9 @@ class SoftThemeProvider extends window.ThemeProvider {
   }
 
   updateMotion(state, bounds) {
-    const { x, y, vx, vy, radius, hue } = state;
-    const speed = 2;
+    const { x, y, vx, vy, radius, hue, speedMultiplier = 1 } = state;
+    const baseSpeed = 3;
+    const speed = baseSpeed * speedMultiplier;
 
     // Elastic ease motion
     let newVx = vx;

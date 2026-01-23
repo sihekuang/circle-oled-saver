@@ -18,8 +18,9 @@ class MinimalThemeProvider extends window.ThemeProvider {
   }
 
   updateMotion(state, bounds) {
-    const { x, y, vx, vy, radius, hue } = state;
-    const speed = 2; // Slightly faster to cover more area
+    const { x, y, vx, vy, radius, hue, speedMultiplier = 1 } = state;
+    const baseSpeed = 3;
+    const speed = baseSpeed * speedMultiplier;
 
     // Smooth drift - gradual angle changes
     this.angle += (Math.random() - 0.5) * 0.02;
