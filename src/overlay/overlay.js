@@ -60,20 +60,24 @@ class BouncingBall {
     const wrapChance = 0.3;
 
     // Handle horizontal edges (based on ball center)
-    if (this.x < 0) {
-      // Went off left edge - wrap to right
-      this.x = canvas.width;
-      this.hue = (this.hue + 30) % 360;
-    } else if (this.x > canvas.width) {
-      // Went off right edge - wrap to left
-      this.x = 0;
-      this.hue = (this.hue + 30) % 360;
-    } else if (this.x <= 0 || this.x >= canvas.width) {
+    if (this.x <= 0 || this.x >= canvas.width) {
       if (Math.random() < wrapChance) {
-        // Let it continue through (will wrap on next frames)
+        // Wrap through edge
+        if (this.x <= 0) {
+          this.x = canvas.width;
+        } else {
+          this.x = 0;
+        }
+        this.hue = (this.hue + 30) % 360;
       } else {
         // Bounce with random angle variation
         this.speedX = -this.speedX;
+        // Keep ball in bounds
+        if (this.x <= 0) {
+          this.x = 0;
+        } else {
+          this.x = canvas.width;
+        }
         // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
         if (Math.random() < 0.2) {
           this.speedY = (Math.random() - 0.5) * this.maxSpeed * 1.5;
@@ -86,20 +90,24 @@ class BouncingBall {
     }
 
     // Handle vertical edges (based on ball center)
-    if (this.y < 0) {
-      // Went off top edge - wrap to bottom
-      this.y = canvas.height;
-      this.hue = (this.hue + 30) % 360;
-    } else if (this.y > canvas.height) {
-      // Went off bottom edge - wrap to top
-      this.y = 0;
-      this.hue = (this.hue + 30) % 360;
-    } else if (this.y <= 0 || this.y >= canvas.height) {
+    if (this.y <= 0 || this.y >= canvas.height) {
       if (Math.random() < wrapChance) {
-        // Let it continue through (will wrap on next frames)
+        // Wrap through edge
+        if (this.y <= 0) {
+          this.y = canvas.height;
+        } else {
+          this.y = 0;
+        }
+        this.hue = (this.hue + 30) % 360;
       } else {
         // Bounce with random angle variation
         this.speedY = -this.speedY;
+        // Keep ball in bounds
+        if (this.y <= 0) {
+          this.y = 0;
+        } else {
+          this.y = canvas.height;
+        }
         // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
         if (Math.random() < 0.2) {
           this.speedX = (Math.random() - 0.5) * this.maxSpeed * 1.5;
