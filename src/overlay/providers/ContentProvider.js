@@ -13,7 +13,7 @@ class ContentProvider {
    */
   getData() {
     return this.cachedData || {
-      icon: '❓',
+      icon: 'help-circle',
       text: 'Loading...'
     };
   }
