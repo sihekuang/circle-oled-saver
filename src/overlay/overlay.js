@@ -242,15 +242,24 @@ class BouncingBall {
 
     // Icon size and position (top of circle)
     const iconSize = this.radius * 0.25;
-    ctx.font = `${iconSize}px Arial`;
     const iconY = this.y - this.radius * 0.3;
 
-    // Draw icon with black stroke for visibility
-    ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
-    ctx.lineWidth = Math.max(2, iconSize * 0.1);
-    ctx.strokeText(content.icon, this.x, iconY);
-    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-    ctx.fillText(content.icon, this.x, iconY);
+    // Determine icon color (white with opacity for visibility on dark backgrounds)
+    const iconColor = `rgba(255, 255, 255, ${opacity})`;
+
+    // Try to draw as Lucide icon first
+    if (window.iconRegistry && window.iconRegistry.hasIcon(content.icon)) {
+      // Draw Lucide icon
+      window.iconRegistry.draw(ctx, content.icon, this.x, iconY, iconSize, iconColor);
+    } else {
+      // Fallback: draw as emoji/text
+      ctx.font = `${iconSize}px Arial`;
+      ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+      ctx.lineWidth = Math.max(2, iconSize * 0.1);
+      ctx.strokeText(content.icon, this.x, iconY);
+      ctx.fillStyle = iconColor;
+      ctx.fillText(content.icon, this.x, iconY);
+    }
 
     // Text size and position (below icon)
     const textSize = this.radius * 0.15;
@@ -260,6 +269,9 @@ class BouncingBall {
     const lines = content.text.split('\n');
     const lineHeight = textSize * 1.2;
     const textStartY = this.y + this.radius * 0.1;
+
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+    ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
 
     lines.forEach((line, index) => {
       const y = textStartY + (index * lineHeight);
