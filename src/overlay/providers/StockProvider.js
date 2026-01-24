@@ -19,7 +19,7 @@ class StockProvider extends window.ContentProvider {
       if (!data) {
         // No data available yet
         this.cachedData = {
-          icon: '📈',
+          icon: 'trending-up',
           text: `${symbol}\nLoading...`
         };
       } else {
@@ -27,7 +27,7 @@ class StockProvider extends window.ContentProvider {
         const changePercent = Math.abs(data.changePercent).toFixed(2);
 
         this.cachedData = {
-          icon: '📈',
+          icon: 'trending-up',
           text: `${symbol} $${data.price}\n${arrow} ${changePercent}%`
         };
       }
@@ -39,7 +39,7 @@ class StockProvider extends window.ContentProvider {
     } catch (err) {
       console.error('StockProvider fetch error:', err);
       this.cachedData = {
-        icon: '📈',
+        icon: 'trending-up',
         text: 'Market data\nunavailable'
       };
     }
