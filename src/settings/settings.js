@@ -146,7 +146,7 @@ hotkeyReset.addEventListener('click', async () => {
 });
 
 alwaysOnCheckbox.addEventListener('change', async () => {
-  await window.oledSaver.saveSettings({ alwaysOnMode: alwaysOnCheckbox.checked });
+  await window.oledSaver.toggleAlwaysOn();
 });
 
 // Listen for always-on changes from hotkey/tray

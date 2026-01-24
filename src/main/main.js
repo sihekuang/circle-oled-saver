@@ -42,6 +42,10 @@ app.on('ready', async () => {
       // Restart idle monitoring in case it was stopped by test overlay
       idleMonitor.start();
     },
+    onAlwaysOnToggle: () => {
+      console.log('[Main] Always-on toggle triggered from menu');
+      toggleAlwaysOnMode();
+    },
     onQuitClick: () => {
       cleanup();
       app.quit();
@@ -145,6 +149,7 @@ function registerAlwaysOnHotkey() {
 
 function toggleAlwaysOnMode() {
   const newState = !config.isAlwaysOnMode();
+  console.log(`[Main] toggleAlwaysOnMode called, newState=${newState}`);
   config.setAlwaysOnMode(newState);
 
   // Show toast notification
@@ -159,8 +164,10 @@ function toggleAlwaysOnMode() {
 
   if (newState) {
     // Enable: show overlays immediately
+    console.log(`[Main] hasActiveOverlays=${windowManager.hasActiveOverlays()}`);
     if (!windowManager.hasActiveOverlays()) {
       idleMonitor.stop();
+      console.log('[Main] Creating overlays for always-on mode');
       windowManager.createOverlays(() => {
         // Only restart idle monitor if always-on is disabled
         if (!config.isAlwaysOnMode()) {

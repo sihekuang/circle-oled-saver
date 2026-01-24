@@ -20,11 +20,12 @@ class TrayManager {
     this.onQuitClick = null;
   }
 
-  create({ onSettingsClick, onQuitClick, onTestOverlayClick, onClearOverlayClick }) {
+  create({ onSettingsClick, onQuitClick, onTestOverlayClick, onClearOverlayClick, onAlwaysOnToggle }) {
     this.onSettingsClick = onSettingsClick;
     this.onQuitClick = onQuitClick;
     this.onTestOverlayClick = onTestOverlayClick;
     this.onClearOverlayClick = onClearOverlayClick;
+    this.onAlwaysOnToggle = onAlwaysOnToggle;
 
     const iconPath = path.join(__dirname, '../../assets/trayTemplate.png');
 
@@ -104,8 +105,9 @@ class TrayManager {
         type: 'checkbox',
         checked: alwaysOn,
         click: () => {
-          if (global.toggleAlwaysOnMode) {
-            global.toggleAlwaysOnMode();
+          console.log('[TrayManager] Always On clicked, callback exists:', !!this.onAlwaysOnToggle);
+          if (this.onAlwaysOnToggle) {
+            this.onAlwaysOnToggle();
           }
         }
       },

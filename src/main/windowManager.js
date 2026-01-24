@@ -220,6 +220,7 @@ class WindowManager {
     ipcMain.removeHandler('get-ball-speed');
     ipcMain.removeHandler('get-always-on-hotkey');
     ipcMain.removeHandler('set-always-on-hotkey');
+    ipcMain.removeHandler('toggle-always-on');
 
     ipcMain.handle('get-settings', () => {
       return {
@@ -290,6 +291,13 @@ class WindowManager {
         global.registerAlwaysOnHotkey();
       }
       return true;
+    });
+
+    ipcMain.handle('toggle-always-on', () => {
+      if (global.toggleAlwaysOnMode) {
+        global.toggleAlwaysOnMode();
+      }
+      return config.isAlwaysOnMode();
     });
   }
 
