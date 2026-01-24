@@ -95,6 +95,23 @@
           <span class="toggle-slider"></span>
         </label>
       </section>
+
+      <section class="setting-group">
+        <h3 style="margin-top: 0;">Always On Mode</h3>
+        <label class="toggle-label" style="margin-bottom: 16px;">
+          <span>Always On</span>
+          <input type="checkbox" id="always-on-mode">
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="always-on-hotkey">Hotkey</label>
+        <div class="hotkey-input-group">
+          <div class="hotkey-display" id="hotkey-display" tabindex="0">
+            <span id="hotkey-text">Loading...</span>
+          </div>
+          <button type="button" id="hotkey-reset" class="hotkey-reset-btn">Reset</button>
+        </div>
+        <p class="info-text" id="hotkey-hint">Click to record new hotkey</p>
+      </section>
     </div>
 
     <div id="content-tab" class="tab-content">

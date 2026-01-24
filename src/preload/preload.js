@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('oledSaver', {
   saveContentSettings: (settings) => ipcRenderer.invoke('save-content-settings', settings),
   getTheme: () => ipcRenderer.invoke('get-theme'),
   saveTheme: (themeId) => ipcRenderer.invoke('save-theme', themeId),
+  getAlwaysOnHotkey: () => ipcRenderer.invoke('get-always-on-hotkey'),
+  setAlwaysOnHotkey: (accelerator) => ipcRenderer.invoke('set-always-on-hotkey', accelerator),
 
   // Event listeners
   onFadeOut: (callback) => {

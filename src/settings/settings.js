@@ -11,6 +11,143 @@ const ballSpeedSlider = document.getElementById('ball-speed');
 const ballSpeedValueInput = document.getElementById('ball-speed-value');
 const launchAtLoginCheckbox = document.getElementById('launch-at-login');
 const themeCards = document.querySelectorAll('.theme-card');
+const alwaysOnCheckbox = document.getElementById('always-on-mode');
+const hotkeyDisplay = document.getElementById('hotkey-display');
+const hotkeyText = document.getElementById('hotkey-text');
+const hotkeyReset = document.getElementById('hotkey-reset');
+const hotkeyHint = document.getElementById('hotkey-hint');
+
+// Hotkey recording state
+let isRecordingHotkey = false;
+const DEFAULT_HOTKEY = 'CommandOrControl+Shift+O';
+
+function formatAcceleratorForDisplay(accelerator) {
+  if (!accelerator) return 'Not set';
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  return accelerator
+    .replace('CommandOrControl', isMac ? '\u2318' : 'Ctrl')
+    .replace('Command', '\u2318')
+    .replace('Control', 'Ctrl')
+    .replace('Alt', isMac ? '\u2325' : 'Alt')
+    .replace('Shift', isMac ? '\u21E7' : 'Shift')
+    .replace(/\+/g, ' + ');
+}
+
+function startHotkeyRecording() {
+  isRecordingHotkey = true;
+  hotkeyDisplay.classList.add('recording');
+  hotkeyText.textContent = 'Press keys...';
+  hotkeyHint.textContent = 'Press Escape to cancel';
+}
+
+function stopHotkeyRecording(newAccelerator = null) {
+  isRecordingHotkey = false;
+  hotkeyDisplay.classList.remove('recording');
+  hotkeyHint.textContent = 'Click to record new hotkey';
+
+  if (newAccelerator) {
+    hotkeyText.textContent = formatAcceleratorForDisplay(newAccelerator);
+  }
+}
+
+function keyEventToAccelerator(e) {
+  const parts = [];
+
+  // Check for modifier keys
+  if (e.ctrlKey || e.metaKey) {
+    parts.push('CommandOrControl');
+  }
+  if (e.altKey) {
+    parts.push('Alt');
+  }
+  if (e.shiftKey) {
+    parts.push('Shift');
+  }
+
+  // Get the main key
+  const key = e.key;
+
+  // Skip if only modifier keys are pressed
+  if (['Control', 'Meta', 'Alt', 'Shift'].includes(key)) {
+    return null;
+  }
+
+  // Map special keys
+  const keyMap = {
+    'ArrowUp': 'Up',
+    'ArrowDown': 'Down',
+    'ArrowLeft': 'Left',
+    'ArrowRight': 'Right',
+    ' ': 'Space',
+    'Escape': 'Escape'
+  };
+
+  const mappedKey = keyMap[key] || key.toUpperCase();
+  parts.push(mappedKey);
+
+  return parts.join('+');
+}
+
+function isValidHotkey(accelerator) {
+  if (!accelerator) return false;
+
+  const parts = accelerator.split('+');
+
+  // Must have at least one modifier and one key
+  const modifiers = ['CommandOrControl', 'Control', 'Command', 'Alt', 'Shift'];
+  const hasModifier = parts.some(p => modifiers.includes(p));
+  const hasKey = parts.some(p => !modifiers.includes(p));
+
+  return hasModifier && hasKey;
+}
+
+// Hotkey recording event listeners
+hotkeyDisplay.addEventListener('click', () => {
+  if (!isRecordingHotkey) {
+    startHotkeyRecording();
+  }
+});
+
+hotkeyDisplay.addEventListener('keydown', async (e) => {
+  if (!isRecordingHotkey) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Cancel on Escape
+  if (e.key === 'Escape') {
+    stopHotkeyRecording();
+    // Restore previous value
+    const hotkey = await window.oledSaver.getAlwaysOnHotkey();
+    hotkeyText.textContent = formatAcceleratorForDisplay(hotkey);
+    return;
+  }
+
+  const accelerator = keyEventToAccelerator(e);
+
+  if (accelerator && isValidHotkey(accelerator)) {
+    await window.oledSaver.setAlwaysOnHotkey(accelerator);
+    stopHotkeyRecording(accelerator);
+  }
+});
+
+hotkeyDisplay.addEventListener('blur', async () => {
+  if (isRecordingHotkey) {
+    stopHotkeyRecording();
+    // Restore previous value
+    const hotkey = await window.oledSaver.getAlwaysOnHotkey();
+    hotkeyText.textContent = formatAcceleratorForDisplay(hotkey);
+  }
+});
+
+hotkeyReset.addEventListener('click', async () => {
+  await window.oledSaver.setAlwaysOnHotkey(DEFAULT_HOTKEY);
+  hotkeyText.textContent = formatAcceleratorForDisplay(DEFAULT_HOTKEY);
+});
+
+alwaysOnCheckbox.addEventListener('change', async () => {
+  await window.oledSaver.saveSettings({ alwaysOnMode: alwaysOnCheckbox.checked });
+});
 
 async function loadSettings() {
   const settings = await window.oledSaver.getSettings();
@@ -43,6 +180,10 @@ async function loadSettings() {
   themeCards.forEach(card => {
     card.classList.toggle('active', card.dataset.theme === currentTheme);
   });
+
+  // Always On settings
+  alwaysOnCheckbox.checked = settings.alwaysOnMode || false;
+  hotkeyText.textContent = formatAcceleratorForDisplay(settings.alwaysOnHotkey);
 
   // Content settings
   if (settings.content) {

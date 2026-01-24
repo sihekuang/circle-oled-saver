@@ -218,6 +218,8 @@ class WindowManager {
     ipcMain.removeHandler('save-settings');
     ipcMain.removeHandler('save-content-settings');
     ipcMain.removeHandler('get-ball-speed');
+    ipcMain.removeHandler('get-always-on-hotkey');
+    ipcMain.removeHandler('set-always-on-hotkey');
 
     ipcMain.handle('get-settings', () => {
       return {
@@ -229,7 +231,9 @@ class WindowManager {
         ballOpacity: config.getBallOpacity(),
         ballSpeed: config.getBallSpeed(),
         content: config.getContentSettings(),
-        theme: config.getTheme()
+        theme: config.getTheme(),
+        alwaysOnMode: config.isAlwaysOnMode(),
+        alwaysOnHotkey: config.getAlwaysOnHotkey()
       };
     });
 
@@ -262,11 +266,27 @@ class WindowManager {
       if (settings.theme !== undefined) {
         config.setTheme(settings.theme);
       }
+      if (settings.alwaysOnMode !== undefined) {
+        config.setAlwaysOnMode(settings.alwaysOnMode);
+      }
       return true;
     });
 
     ipcMain.handle('save-content-settings', (event, settings) => {
       config.setContentSettings(settings);
+      return true;
+    });
+
+    ipcMain.handle('get-always-on-hotkey', () => {
+      return config.getAlwaysOnHotkey();
+    });
+
+    ipcMain.handle('set-always-on-hotkey', (event, accelerator) => {
+      config.setAlwaysOnHotkey(accelerator);
+      // Re-register the hotkey
+      if (global.registerAlwaysOnHotkey) {
+        global.registerAlwaysOnHotkey();
+      }
       return true;
     });
   }
