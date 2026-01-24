@@ -1,73 +1,131 @@
 // src/overlay/IconRegistry.js
+// Loads PNG icons and draws them with optional color tinting
 
-// Icon path data (will be inlined from icons.json at build, or loaded)
-// For browser use, we'll inline the JSON or load it
 class IconRegistry {
   constructor() {
-    this.icons = {};
-    this.pathCache = new Map();
+    this.images = new Map();      // iconName -> Image
+    this.loadingPromises = new Map(); // iconName -> Promise
+    this.tintCache = new Map();   // `${iconName}-${color}` -> canvas
   }
 
   /**
-   * Load icons from the icons.json data
-   * @param {Object} iconData - Object mapping icon names to path strings
+   * Preload an icon image
+   * @param {string} iconName - Name of the icon (without extension)
+   * @returns {Promise<Image>}
    */
-  loadIcons(iconData) {
-    this.icons = iconData;
-    this.pathCache.clear();
+  loadIcon(iconName) {
+    // Return cached image if already loaded
+    if (this.images.has(iconName)) {
+      return Promise.resolve(this.images.get(iconName));
+    }
+
+    // Return existing loading promise if in progress
+    if (this.loadingPromises.has(iconName)) {
+      return this.loadingPromises.get(iconName);
+    }
+
+    // Start loading
+    const promise = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        this.images.set(iconName, img);
+        this.loadingPromises.delete(iconName);
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        this.loadingPromises.delete(iconName);
+        console.error(`IconRegistry: Failed to load icon "${iconName}"`);
+        reject(err);
+      };
+      img.src = `icons/${iconName}.png`;
+    });
+
+    this.loadingPromises.set(iconName, promise);
+    return promise;
   }
 
   /**
-   * Check if an icon exists
+   * Preload multiple icons
+   * @param {string[]} iconNames - Array of icon names to preload
+   * @returns {Promise<void>}
+   */
+  async preloadIcons(iconNames) {
+    await Promise.all(iconNames.map(name => this.loadIcon(name)));
+  }
+
+  /**
+   * Check if an icon is loaded and ready
    * @param {string} iconName - Name of the icon
    * @returns {boolean}
    */
   hasIcon(iconName) {
-    return iconName in this.icons;
+    return this.images.has(iconName);
   }
 
   /**
-   * Draw an icon on the canvas
+   * Get a tinted version of an icon (cached)
+   * @param {Image} img - Source image
+   * @param {string} iconName - Icon name for cache key
+   * @param {string} color - CSS color string
+   * @returns {HTMLCanvasElement}
+   */
+  getTintedIcon(img, iconName, color) {
+    const cacheKey = `${iconName}-${color}`;
+
+    if (this.tintCache.has(cacheKey)) {
+      return this.tintCache.get(cacheKey);
+    }
+
+    // Create offscreen canvas for tinting
+    const offscreen = document.createElement('canvas');
+    offscreen.width = img.width;
+    offscreen.height = img.height;
+    const offCtx = offscreen.getContext('2d');
+
+    // Draw the white icon
+    offCtx.drawImage(img, 0, 0);
+
+    // Apply tint: source-in composites the fill color only where pixels exist
+    offCtx.globalCompositeOperation = 'source-in';
+    offCtx.fillStyle = color;
+    offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+
+    // Cache the tinted canvas
+    this.tintCache.set(cacheKey, offscreen);
+    return offscreen;
+  }
+
+  /**
+   * Clear the tint cache (call when theme changes)
+   */
+  clearTintCache() {
+    this.tintCache.clear();
+  }
+
+  /**
+   * Draw an icon on the canvas with optional color tinting
    * @param {CanvasRenderingContext2D} ctx - Canvas context
    * @param {string} iconName - Name of the icon to draw
    * @param {number} x - X position (center of icon)
    * @param {number} y - Y position (center of icon)
    * @param {number} size - Size to draw the icon (width/height)
-   * @param {string} color - Stroke color
-   * @returns {boolean} - True if icon was drawn, false if not found
+   * @param {string} color - Color to tint the icon (CSS color string)
+   * @returns {boolean} - True if icon was drawn, false if not loaded
    */
   draw(ctx, iconName, x, y, size, color) {
-    const pathData = this.icons[iconName];
-    if (!pathData) {
-      console.warn(`IconRegistry: Icon "${iconName}" not found`);
+    const img = this.images.get(iconName);
+    if (!img) {
+      // Try to load it for next time
+      this.loadIcon(iconName);
       return false;
     }
 
-    // Get or create cached Path2D
-    let path = this.pathCache.get(iconName);
-    if (!path) {
-      path = new Path2D(pathData);
-      this.pathCache.set(iconName, path);
-    }
+    // Get tinted version
+    const tinted = this.getTintedIcon(img, iconName, color);
 
-    const scale = size / 24; // Lucide icons use 24x24 viewBox
-
-    ctx.save();
-
-    // Position at x, y (icon will be drawn centered around origin after translate)
-    // Lucide icons are drawn in 0-24 range, so offset by -12 to center
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.translate(-12, -12); // Center the 24x24 icon
-
-    // Lucide icons are stroke-based
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke(path);
-
-    ctx.restore();
+    // Draw centered at x, y
+    const halfSize = size / 2;
+    ctx.drawImage(tinted, x - halfSize, y - halfSize, size, size);
     return true;
   }
 }

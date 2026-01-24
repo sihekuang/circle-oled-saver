@@ -25,11 +25,20 @@
   <script src="themes/AbstractThemeProvider.js"></script>
   <script src="IconRegistry.js"></script>
   <script>
-    // Load icon data
-    fetch('icons.json')
-      .then(res => res.json())
-      .then(data => window.iconRegistry.loadIcons(data))
-      .catch(err => console.error('Failed to load icons:', err));
+    // Preload icon images
+    window.iconRegistry.preloadIcons([
+      'clock',
+      'cpu',
+      'hard-drive',
+      'battery',
+      'battery-low',
+      'battery-medium',
+      'battery-full',
+      'battery-charging',
+      'trending-up',
+      'bar-chart-2',
+      'help-circle'
+    ]).catch(err => console.error('Failed to preload icons:', err));
   </script>
   <script src="overlay.js"></script>
 </body>
