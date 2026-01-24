@@ -23,7 +23,7 @@ class ClockProvider extends window.ContentProvider {
     const date = now.toLocaleDateString('en-US', dateOptions);
 
     this.cachedData = {
-      icon: '🕐',
+      icon: 'clock',
       text: `${time}\n${date}`
     };
 
