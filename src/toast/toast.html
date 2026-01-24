@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="toast.css">
+</head>
+<body>
+  <div class="toast" id="toast">
+    <span id="message">Always On: Enabled</span>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.on('show-toast', (event, message) => {
+      document.getElementById('message').textContent = message;
+      document.getElementById('toast').classList.add('visible');
+    });
+  </script>
+</body>
+</html>
