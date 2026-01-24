@@ -1,9 +1,10 @@
-const { app, dialog, nativeImage } = require('electron');
+const { app, dialog, nativeImage, globalShortcut } = require('electron');
 const path = require('path');
 const config = require('./config');
 const idleMonitor = require('./idleMonitor');
 const trayManager = require('./trayManager');
 const windowManager = require('./windowManager');
+const toastManager = require('./toastManager');
 
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock();
@@ -59,6 +60,21 @@ app.on('ready', async () => {
   // Start monitoring
   idleMonitor.start();
 
+  // Register global hotkey for always-on mode
+  registerAlwaysOnHotkey();
+
+  // If always-on was previously enabled, activate it
+  if (config.isAlwaysOnMode()) {
+    if (!windowManager.hasActiveOverlays()) {
+      idleMonitor.stop();
+      windowManager.createOverlays(() => {
+        if (!config.isAlwaysOnMode()) {
+          idleMonitor.start();
+        }
+      });
+    }
+  }
+
   // Prompt for auto-start on first run
   if (!config.hasPromptedAutoStart() || true) {
     promptAutoStart();
@@ -89,10 +105,70 @@ async function promptAutoStart() {
 }
 
 function cleanup() {
+  globalShortcut.unregisterAll();
   idleMonitor.stop();
   windowManager.destroyAll();
   trayManager.destroy();
 }
+
+let currentHotkey = null;
+
+function registerAlwaysOnHotkey() {
+  // Unregister existing hotkey if any
+  if (currentHotkey) {
+    globalShortcut.unregister(currentHotkey);
+    currentHotkey = null;
+  }
+
+  const hotkey = config.getAlwaysOnHotkey();
+  if (!hotkey) return;
+
+  const success = globalShortcut.register(hotkey, () => {
+    toggleAlwaysOnMode();
+  });
+
+  if (success) {
+    currentHotkey = hotkey;
+    console.log(`[Main] Registered always-on hotkey: ${hotkey}`);
+  } else {
+    console.log(`[Main] Failed to register hotkey: ${hotkey}`);
+  }
+}
+
+function toggleAlwaysOnMode() {
+  const newState = !config.isAlwaysOnMode();
+  config.setAlwaysOnMode(newState);
+
+  // Show toast notification
+  const message = newState ? 'Always On: Enabled' : 'Always On: Disabled';
+  toastManager.show(message);
+
+  // Update tray menu
+  trayManager.updateMenu();
+
+  if (newState) {
+    // Enable: show overlays immediately
+    if (!windowManager.hasActiveOverlays()) {
+      idleMonitor.stop();
+      windowManager.createOverlays(() => {
+        // Only restart idle monitor if always-on is disabled
+        if (!config.isAlwaysOnMode()) {
+          idleMonitor.start();
+        }
+      });
+    }
+  } else {
+    // Disable: dismiss overlays and restart normal monitoring
+    if (windowManager.hasActiveOverlays()) {
+      windowManager.dismissOverlays();
+    }
+    idleMonitor.start();
+  }
+}
+
+// Expose for tray menu
+global.toggleAlwaysOnMode = toggleAlwaysOnMode;
+global.registerAlwaysOnHotkey = registerAlwaysOnHotkey;
 
 app.on('window-all-closed', (e) => {
   // Prevent app from quitting when all windows are closed
