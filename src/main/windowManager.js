@@ -269,6 +269,8 @@ class WindowManager {
       if (settings.alwaysOnMode !== undefined) {
         config.setAlwaysOnMode(settings.alwaysOnMode);
       }
+      // Notify overlays of settings changes
+      this.notifyOverlaysSettingsChanged(settings);
       return true;
     });
 
@@ -295,6 +297,20 @@ class WindowManager {
     if (this.settingsWindow && !this.settingsWindow.isDestroyed()) {
       this.settingsWindow.close();
     }
+  }
+
+  notifyAlwaysOnChanged(newState) {
+    if (this.settingsWindow && !this.settingsWindow.isDestroyed()) {
+      this.settingsWindow.webContents.send('always-on-changed', newState);
+    }
+  }
+
+  notifyOverlaysSettingsChanged(settings) {
+    this.overlayWindows.forEach(overlay => {
+      if (!overlay.isDestroyed()) {
+        overlay.webContents.send('settings-changed', settings);
+      }
+    });
   }
 
   destroyAll() {

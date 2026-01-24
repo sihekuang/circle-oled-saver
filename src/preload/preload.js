@@ -22,5 +22,11 @@ contextBridge.exposeInMainWorld('oledSaver', {
   // Event listeners
   onFadeOut: (callback) => {
     ipcRenderer.on('fade-out', () => callback());
+  },
+  onAlwaysOnChanged: (callback) => {
+    ipcRenderer.on('always-on-changed', (event, newState) => callback(newState));
+  },
+  onSettingsChanged: (callback) => {
+    ipcRenderer.on('settings-changed', (event, settings) => callback(settings));
   }
 });

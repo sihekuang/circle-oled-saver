@@ -140,8 +140,11 @@ function toggleAlwaysOnMode() {
   config.setAlwaysOnMode(newState);
 
   // Show toast notification
-  const message = newState ? 'Always On: Enabled' : 'Always On: Disabled';
+  const message = newState ? 'Circle: Always On' : 'Circle: Always Off';
   toastManager.show(message);
+
+  // Notify settings window if open
+  windowManager.notifyAlwaysOnChanged(newState);
 
   // Update tray menu
   trayManager.updateMenu();

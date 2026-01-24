@@ -413,3 +413,44 @@ window.oledSaver.onFadeOut(() => {
     window.contentRotator.destroy();
   }
 });
+
+// Listen for realtime settings changes
+window.oledSaver.onSettingsChanged((settings) => {
+  console.log('[Overlay] Settings changed:', settings);
+
+  if (settings.ballSizeMode !== undefined) {
+    ballSizeMode = settings.ballSizeMode;
+  }
+  if (settings.ballSize !== undefined) {
+    ballSizeValue = settings.ballSize;
+  }
+  if (settings.ballOpacity !== undefined) {
+    ballOpacityPercentage = settings.ballOpacity;
+  }
+  if (settings.ballSpeed !== undefined) {
+    ballSpeedPercentage = settings.ballSpeed;
+    // Update ball speed if it exists
+    if (ball) {
+      const speedMultiplier = ballSpeedPercentage / 100;
+      const currentSpeed = Math.sqrt(ball.speedX ** 2 + ball.speedY ** 2);
+      const baseSpeed = currentSpeed / (ball.maxSpeed / (8 * speedMultiplier));
+      ball.maxSpeed = 8 * speedMultiplier;
+    }
+  }
+  if (settings.theme !== undefined) {
+    // Switch theme provider
+    const ThemeClass = {
+      'minimal': window.MinimalThemeProvider,
+      'soft': window.SoftThemeProvider,
+      'glassy': window.GlassyThemeProvider,
+      'abstract': window.AbstractThemeProvider
+    }[settings.theme] || window.MinimalThemeProvider;
+    window.themeProvider = new ThemeClass();
+    console.log('[Overlay] Theme switched to:', settings.theme);
+  }
+
+  // Update ball size if it exists
+  if (ball) {
+    ball.updateSize();
+  }
+});

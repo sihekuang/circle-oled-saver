@@ -149,6 +149,11 @@ alwaysOnCheckbox.addEventListener('change', async () => {
   await window.oledSaver.saveSettings({ alwaysOnMode: alwaysOnCheckbox.checked });
 });
 
+// Listen for always-on changes from hotkey/tray
+window.oledSaver.onAlwaysOnChanged((newState) => {
+  alwaysOnCheckbox.checked = newState;
+});
+
 async function loadSettings() {
   const settings = await window.oledSaver.getSettings();
 
