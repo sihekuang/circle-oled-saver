@@ -43,7 +43,8 @@ class IdleMonitor extends EventEmitter {
     } else {
       // Screensaver is active, check if user became active
       // If idle time drops significantly (user input detected)
-      if (idleTimeSeconds < 2) {
+      // BUT ignore if always-on mode is enabled
+      if (idleTimeSeconds < 2 && !config.isAlwaysOnMode()) {
         this.isScreensaverActive = false;
         this.emit('active');
       }
