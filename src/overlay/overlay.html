@@ -23,6 +23,14 @@
   <script src="themes/SoftThemeProvider.js"></script>
   <script src="themes/GlassyThemeProvider.js"></script>
   <script src="themes/AbstractThemeProvider.js"></script>
+  <script src="IconRegistry.js"></script>
+  <script>
+    // Load icon data
+    fetch('icons.json')
+      .then(res => res.json())
+      .then(data => window.iconRegistry.loadIcons(data))
+      .catch(err => console.error('Failed to load icons:', err));
+  </script>
   <script src="overlay.js"></script>
 </body>
 </html>
