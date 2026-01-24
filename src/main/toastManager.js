@@ -15,9 +15,9 @@ class ToastManager {
     const { width, height } = primaryDisplay.workAreaSize;
 
     this.toastWindow = new BrowserWindow({
-      width: 200,
+      width: 280,
       height: 80,
-      x: Math.round((width - 200) / 2),
+      x: Math.round((width - 280) / 2),
       y: Math.round((height - 80) / 2),
       frame: false,
       transparent: true,

@@ -13,14 +13,22 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 200px;
+  gap: 12px;
+  width: 280px;
   height: 80px;
+  padding: 0 20px;
   background: rgba(30, 30, 30, 0.9);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   opacity: 0;
   transform: scale(0.9);
   transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.toast-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .toast.visible {

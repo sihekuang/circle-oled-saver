@@ -76,7 +76,7 @@ app.on('ready', async () => {
   }
 
   // Prompt for auto-start on first run
-  if (!config.hasPromptedAutoStart() || true) {
+  if (!config.hasPromptedAutoStart()) {
     promptAutoStart();
   }
 });
@@ -140,7 +140,7 @@ function toggleAlwaysOnMode() {
   config.setAlwaysOnMode(newState);
 
   // Show toast notification
-  const message = newState ? 'Circle: Always On' : 'Circle: Always Off';
+  const message = newState ? 'Always On' : 'Always Off';
   toastManager.show(message);
 
   // Notify settings window if open
