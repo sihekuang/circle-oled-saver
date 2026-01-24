@@ -45,8 +45,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "canvas": "^3.2.1",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
+    "lucide-static": "^0.563.0",
     "sharp": "^0.34.5"
   },
   "dependencies": {
