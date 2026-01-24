@@ -18,6 +18,9 @@
       "icon": "assets/icon.icns",
       "category": "public.app-category.utilities"
     },
+    "dmg": {
+      "icon": "assets/icon.icns"
+    },
     "win": {
       "icon": "assets/icon.png"
     },
