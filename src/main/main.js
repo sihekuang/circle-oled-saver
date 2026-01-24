@@ -1,4 +1,5 @@
-const { app, dialog } = require('electron');
+const { app, dialog, nativeImage } = require('electron');
+const path = require('path');
 const config = require('./config');
 const idleMonitor = require('./idleMonitor');
 const trayManager = require('./trayManager');
@@ -59,18 +60,22 @@ app.on('ready', async () => {
   idleMonitor.start();
 
   // Prompt for auto-start on first run
-  if (!config.hasPromptedAutoStart()) {
+  if (!config.hasPromptedAutoStart() || true) {
     promptAutoStart();
   }
 });
 
 async function promptAutoStart() {
+  const iconPath = path.join(__dirname, '../../assets/icon.png');
+  const icon = nativeImage.createFromPath(iconPath);
+
   const result = await dialog.showMessageBox({
     type: 'question',
     buttons: ['Yes', 'No'],
     defaultId: 0,
     title: 'Circle',
-    message: 'Would you like Circle to start automatically when you log in?'
+    message: 'Would you like Circle to start automatically when you log in?',
+    icon: icon
   });
 
   config.setHasPromptedAutoStart(true);
