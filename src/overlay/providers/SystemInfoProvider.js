@@ -10,7 +10,7 @@ class SystemInfoProvider extends window.ContentProvider {
       // Get real system info via IPC
       const systemInfo = await window.oledSaver.getSystemInfo();
 
-      let text = `⚙️ ${systemInfo.cpuPercent}%  💾 ${systemInfo.memUsedGB}/${systemInfo.memTotalGB} GB`;
+      let text = `CPU ${systemInfo.cpuPercent}%  RAM ${systemInfo.memUsedGB}/${systemInfo.memTotalGB} GB`;
 
       // Battery (if available)
       if (this.config.showBattery && typeof navigator !== 'undefined' && navigator.getBattery) {
@@ -19,14 +19,14 @@ class SystemInfoProvider extends window.ContentProvider {
             this._batteryManager = await navigator.getBattery();
           }
           const batteryPercent = Math.round(this._batteryManager.level * 100);
-          text += `\n🔋 ${batteryPercent}%`;
+          text += `\nBattery ${batteryPercent}%`;
         } catch (e) {
           // Battery API not available
         }
       }
 
       this.cachedData = {
-        icon: '📊',
+        icon: 'bar-chart-2',
         text: text
       };
 
@@ -34,8 +34,8 @@ class SystemInfoProvider extends window.ContentProvider {
     } catch (err) {
       console.error('SystemInfoProvider fetch error:', err);
       this.cachedData = {
-        icon: '📊',
-        text: '⚙️ N/A  💾 N/A'
+        icon: 'bar-chart-2',
+        text: 'CPU N/A  RAM N/A'
       };
     }
   }
