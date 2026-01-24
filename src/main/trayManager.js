@@ -2,6 +2,17 @@ const { Tray, Menu, nativeImage, app } = require('electron');
 const path = require('path');
 const config = require('./config');
 
+function formatHotkey(accelerator) {
+  if (!accelerator) return '';
+  return accelerator
+    .replace('CommandOrControl', process.platform === 'darwin' ? '\u2318' : 'Ctrl')
+    .replace('Command', '\u2318')
+    .replace('Control', 'Ctrl')
+    .replace('Alt', process.platform === 'darwin' ? '\u2325' : 'Alt')
+    .replace('Shift', process.platform === 'darwin' ? '\u21E7' : 'Shift')
+    .replace(/\+/g, '');
+}
+
 class TrayManager {
   constructor() {
     this.tray = null;
@@ -73,6 +84,8 @@ class TrayManager {
 
   updateMenu() {
     const enabled = config.isEnabled();
+    const alwaysOn = config.isAlwaysOnMode();
+    const hotkeyLabel = formatHotkey(config.getAlwaysOnHotkey());
 
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -82,6 +95,16 @@ class TrayManager {
         click: () => {
           config.setEnabled(!enabled);
           this.updateMenu();
+        }
+      },
+      {
+        label: `Always On${hotkeyLabel ? ' (' + hotkeyLabel + ')' : ''}`,
+        type: 'checkbox',
+        checked: alwaysOn,
+        click: () => {
+          if (global.toggleAlwaysOnMode) {
+            global.toggleAlwaysOnMode();
+          }
         }
       },
       { type: 'separator' },
