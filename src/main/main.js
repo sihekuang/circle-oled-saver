@@ -140,7 +140,7 @@ function toggleAlwaysOnMode() {
   config.setAlwaysOnMode(newState);
 
   // Show toast notification
-  const message = newState ? 'Always On' : 'Always Off';
+  const message = newState ? 'Always On - ENABLED' : 'Always on - DISABLED';
   toastManager.show(message);
 
   // Notify settings window if open
