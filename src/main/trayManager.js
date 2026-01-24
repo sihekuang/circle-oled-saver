@@ -20,10 +20,11 @@ class TrayManager {
     this.onQuitClick = null;
   }
 
-  create({ onSettingsClick, onQuitClick, onTestOverlayClick }) {
+  create({ onSettingsClick, onQuitClick, onTestOverlayClick, onClearOverlayClick }) {
     this.onSettingsClick = onSettingsClick;
     this.onQuitClick = onQuitClick;
     this.onTestOverlayClick = onTestOverlayClick;
+    this.onClearOverlayClick = onClearOverlayClick;
 
     const iconPath = path.join(__dirname, '../../assets/trayTemplate.png');
 
@@ -86,8 +87,9 @@ class TrayManager {
     const enabled = config.isEnabled();
     const alwaysOn = config.isAlwaysOnMode();
     const hotkeyLabel = formatHotkey(config.getAlwaysOnHotkey());
+    const isDev = !app.isPackaged;
 
-    const contextMenu = Menu.buildFromTemplate([
+    const menuItems = [
       {
         label: enabled ? 'Enabled' : 'Disabled',
         type: 'checkbox',
@@ -107,15 +109,32 @@ class TrayManager {
           }
         }
       },
-      { type: 'separator' },
-      {
-        label: 'Test Overlay (Debug)',
-        click: () => {
-          if (this.onTestOverlayClick) {
-            this.onTestOverlayClick();
+      { type: 'separator' }
+    ];
+
+    // Debug menu items only in development
+    if (isDev) {
+      menuItems.push(
+        {
+          label: 'Test Overlay (Debug)',
+          click: () => {
+            if (this.onTestOverlayClick) {
+              this.onTestOverlayClick();
+            }
+          }
+        },
+        {
+          label: 'Clear Test Overlay',
+          click: () => {
+            if (this.onClearOverlayClick) {
+              this.onClearOverlayClick();
+            }
           }
         }
-      },
+      );
+    }
+
+    menuItems.push(
       {
         label: 'Settings...',
         click: () => {
@@ -135,8 +154,9 @@ class TrayManager {
           }
         }
       }
-    ]);
+    );
 
+    const contextMenu = Menu.buildFromTemplate(menuItems);
     this.tray.setContextMenu(contextMenu);
   }
 

@@ -34,6 +34,14 @@ app.on('ready', async () => {
         idleMonitor.start();
       }, true); // Pass debug flag
     },
+    onClearOverlayClick: () => {
+      console.log('[Main] Clear overlay triggered from menu');
+      if (windowManager.hasActiveOverlays()) {
+        windowManager.dismissOverlays();
+      }
+      // Restart idle monitoring in case it was stopped by test overlay
+      idleMonitor.start();
+    },
     onQuitClick: () => {
       cleanup();
       app.quit();
