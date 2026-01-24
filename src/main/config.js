@@ -68,6 +68,14 @@ const schema = {
         showBattery: true
       }
     }
+  },
+  alwaysOnMode: {
+    type: 'boolean',
+    default: false
+  },
+  alwaysOnHotkey: {
+    type: 'string',
+    default: 'CommandOrControl+Alt+O'
   }
 };
 
@@ -178,5 +186,21 @@ module.exports = {
     if (settings.providers) {
       store.set('contentProviders', settings.providers);
     }
+  },
+
+  isAlwaysOnMode() {
+    return store.get('alwaysOnMode');
+  },
+
+  setAlwaysOnMode(enabled) {
+    store.set('alwaysOnMode', enabled);
+  },
+
+  getAlwaysOnHotkey() {
+    return store.get('alwaysOnHotkey');
+  },
+
+  setAlwaysOnHotkey(accelerator) {
+    store.set('alwaysOnHotkey', accelerator);
   }
 };
