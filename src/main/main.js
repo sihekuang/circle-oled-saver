@@ -1,4 +1,4 @@
-const { app, dialog, nativeImage, globalShortcut } = require('electron');
+const { app, dialog, nativeImage, globalShortcut, screen } = require('electron');
 const path = require('path');
 const config = require('./config');
 const idleMonitor = require('./idleMonitor');
@@ -91,6 +91,9 @@ app.on('ready', async () => {
   if (!config.hasPromptedAutoStart()) {
     promptAutoStart();
   }
+
+  // Listen for display changes to refresh overlays in Always On mode
+  setupDisplayChangeListeners();
 });
 
 async function promptAutoStart() {
@@ -145,6 +148,44 @@ function registerAlwaysOnHotkey() {
   } else {
     console.log(`[Main] Failed to register hotkey: ${hotkey}`);
   }
+}
+
+function setupDisplayChangeListeners() {
+  const handleDisplayChange = () => {
+    // Only refresh if Always On mode is active
+    if (config.isAlwaysOnMode() && windowManager.hasActiveOverlays()) {
+      console.log('[Main] Display change detected, refreshing overlays...');
+      windowManager.dismissOverlays();
+      // Small delay to ensure displays are ready
+      setTimeout(() => {
+        if (config.isAlwaysOnMode()) {
+          windowManager.createOverlays(() => {
+            if (!config.isAlwaysOnMode()) {
+              idleMonitor.start();
+            }
+          });
+        }
+      }, 500);
+    }
+  };
+
+  screen.on('display-added', () => {
+    console.log('[Main] Display added');
+    handleDisplayChange();
+  });
+
+  screen.on('display-removed', () => {
+    console.log('[Main] Display removed');
+    handleDisplayChange();
+  });
+
+  screen.on('display-metrics-changed', (event, display, changedMetrics) => {
+    // Only react to size/resolution changes, not workArea changes
+    if (changedMetrics.includes('bounds') || changedMetrics.includes('scaleFactor')) {
+      console.log('[Main] Display metrics changed:', changedMetrics);
+      handleDisplayChange();
+    }
+  });
 }
 
 function toggleAlwaysOnMode() {
