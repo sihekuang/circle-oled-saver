@@ -1,4 +1,4 @@
-const desktopIdle = require('desktop-idle');
+const { powerMonitor } = require('electron');
 const { EventEmitter } = require('events');
 const config = require('./config');
 
@@ -31,7 +31,7 @@ class IdleMonitor extends EventEmitter {
       return;
     }
 
-    const idleTimeSeconds = desktopIdle.getIdleTime();
+    const idleTimeSeconds = powerMonitor.getSystemIdleTime();
     const threshold = config.getIdleTimeout();
     console.log(`[IdleMonitor] Idle: ${idleTimeSeconds}s / Threshold: ${threshold}s`);
 
@@ -56,7 +56,7 @@ class IdleMonitor extends EventEmitter {
   }
 
   getIdleTime() {
-    return desktopIdle.getIdleTime();
+    return powerMonitor.getSystemIdleTime();
   }
 }
 

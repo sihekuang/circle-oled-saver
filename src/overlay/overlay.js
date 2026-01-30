@@ -9,9 +9,22 @@ let ballOpacityPercentage = 100; // Default value
 let ballSpeedPercentage = 100; // Default value
 let lastFrameTime = performance.now();
 
+// Store logical dimensions (CSS pixels) for game logic
+let logicalWidth = window.innerWidth;
+let logicalHeight = window.innerHeight;
+
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  logicalWidth = window.innerWidth;
+  logicalHeight = window.innerHeight;
+
+  // Set canvas buffer size to match physical pixels for crisp rendering
+  canvas.width = logicalWidth * dpr;
+  canvas.height = logicalHeight * dpr;
+
+  // Scale context so drawing uses logical (CSS) pixels
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
   if (ball) {
     ball.updateSize();
   }
@@ -23,8 +36,8 @@ resize();
 class BouncingBall {
   constructor() {
     this.updateSize();
-    this.x = canvas.width / 2;
-    this.y = canvas.height / 2;
+    this.x = logicalWidth / 2;
+    this.y = logicalHeight / 2;
     // Base speed multiplied by speed percentage (100 = normal)
     const speedMultiplier = ballSpeedPercentage / 100;
     this.speedX = 4 * speedMultiplier;
@@ -39,7 +52,7 @@ class BouncingBall {
       this.radius = ballSizeValue;
     } else {
       // Ball size as percentage of smaller dimension
-      const minDim = Math.min(canvas.width, canvas.height);
+      const minDim = Math.min(logicalWidth, logicalHeight);
       this.radius = minDim * (ballSizeValue / 100);
     }
   }
@@ -65,7 +78,7 @@ class BouncingBall {
           hue: this.hue,
           speedMultiplier: ballSpeedPercentage / 100
         },
-        { width: canvas.width, height: canvas.height }
+        { width: logicalWidth, height: logicalHeight }
       );
       this.x = result.x;
       this.y = result.y;
@@ -87,11 +100,11 @@ class BouncingBall {
     const wrapChance = 0.3;
 
     // Handle horizontal edges (based on ball center)
-    if (this.x <= 0 || this.x >= canvas.width) {
+    if (this.x <= 0 || this.x >= logicalWidth) {
       if (Math.random() < wrapChance) {
         // Wrap through edge
         if (this.x <= 0) {
-          this.x = canvas.width;
+          this.x = logicalWidth;
         } else {
           this.x = 0;
         }
@@ -103,7 +116,7 @@ class BouncingBall {
         if (this.x <= 0) {
           this.x = 0;
         } else {
-          this.x = canvas.width;
+          this.x = logicalWidth;
         }
         // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
         if (Math.random() < 0.2) {
@@ -117,11 +130,11 @@ class BouncingBall {
     }
 
     // Handle vertical edges (based on ball center)
-    if (this.y <= 0 || this.y >= canvas.height) {
+    if (this.y <= 0 || this.y >= logicalHeight) {
       if (Math.random() < wrapChance) {
         // Wrap through edge
         if (this.y <= 0) {
-          this.y = canvas.height;
+          this.y = logicalHeight;
         } else {
           this.y = 0;
         }
@@ -133,7 +146,7 @@ class BouncingBall {
         if (this.y <= 0) {
           this.y = 0;
         } else {
-          this.y = canvas.height;
+          this.y = logicalHeight;
         }
         // Randomize angle more drastically: add -3 to +3, with 20% chance of major angle change
         if (Math.random() < 0.2) {
@@ -333,7 +346,7 @@ function animate() {
   const deltaTime = now - lastFrameTime;
   lastFrameTime = now;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, logicalWidth, logicalHeight);
 
   if (window.themeProvider) {
     window.themeProvider.tick(deltaTime);
