@@ -5,6 +5,8 @@ A cross-platform OLED screensaver that displays a bouncing circle with rotating 
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+![Circle Demo](images/output.gif)
+
 ## Features
 
 - **Burn-in Prevention** - A bouncing circle continuously moves across your screen, preventing static elements from burning into OLED panels
