@@ -16,6 +16,9 @@ const hotkeyDisplay = document.getElementById('hotkey-display');
 const hotkeyText = document.getElementById('hotkey-text');
 const hotkeyReset = document.getElementById('hotkey-reset');
 const hotkeyHint = document.getElementById('hotkey-hint');
+const proximityFadeEnabledCheckbox = document.getElementById('proximity-fade-enabled');
+const proximityFadeRadiusSlider = document.getElementById('proximity-fade-radius');
+const proximityFadeRadiusValueInput = document.getElementById('proximity-fade-radius-value');
 
 // Hotkey recording state
 let isRecordingHotkey = false;
@@ -190,6 +193,11 @@ async function loadSettings() {
   alwaysOnCheckbox.checked = settings.alwaysOnMode || false;
   hotkeyText.textContent = formatAcceleratorForDisplay(settings.alwaysOnHotkey);
 
+  // Proximity fade settings
+  proximityFadeEnabledCheckbox.checked = settings.proximityFadeEnabled !== false;
+  proximityFadeRadiusSlider.value = settings.proximityFadeRadius || 150;
+  proximityFadeRadiusValueInput.value = settings.proximityFadeRadius || 150;
+
   // Content settings
   if (settings.content) {
     const { rotation, providers } = settings.content;
@@ -268,6 +276,13 @@ async function saveBallSpeed(percentage) {
   ballSpeedSlider.value = percentage;
   ballSpeedValueInput.value = percentage;
   await window.oledSaver.saveSettings({ ballSpeed: percentage });
+}
+
+async function saveProximityFadeRadius(pixels) {
+  pixels = Math.max(50, Math.min(500, parseInt(pixels) || 150));
+  proximityFadeRadiusSlider.value = pixels;
+  proximityFadeRadiusValueInput.value = pixels;
+  await window.oledSaver.saveSettings({ proximityFadeRadius: pixels });
 }
 
 async function saveSettings() {
@@ -370,6 +385,23 @@ ballSpeedSlider.addEventListener('change', async () => {
 
 ballSpeedValueInput.addEventListener('change', async () => {
   await saveBallSpeed(ballSpeedValueInput.value);
+});
+
+// Proximity fade event listeners
+proximityFadeEnabledCheckbox.addEventListener('change', async () => {
+  await window.oledSaver.saveSettings({ proximityFadeEnabled: proximityFadeEnabledCheckbox.checked });
+});
+
+proximityFadeRadiusSlider.addEventListener('input', () => {
+  proximityFadeRadiusValueInput.value = proximityFadeRadiusSlider.value;
+});
+
+proximityFadeRadiusSlider.addEventListener('change', async () => {
+  await saveProximityFadeRadius(proximityFadeRadiusSlider.value);
+});
+
+proximityFadeRadiusValueInput.addEventListener('change', async () => {
+  await saveProximityFadeRadius(proximityFadeRadiusValueInput.value);
 });
 
 launchAtLoginCheckbox.addEventListener('change', async () => {
