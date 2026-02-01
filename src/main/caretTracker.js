@@ -17,6 +17,7 @@ function getCaretTrackerPath() {
 function execCaretTracker(command) {
   return new Promise((resolve, reject) => {
     const binaryPath = getCaretTrackerPath();
+    console.log(`[CaretTracker] Executing: ${binaryPath} ${command}`);
 
     execFile(binaryPath, [command], { timeout: 1000 }, (error, stdout, stderr) => {
       if (error) {
@@ -24,10 +25,12 @@ function execCaretTracker(command) {
         if (error.code === 'ENOENT') {
           reject(new Error('Caret tracker binary not found. Run: npm run build:native'));
         } else {
+          console.error(`[CaretTracker] CLI error:`, error.message);
           reject(error);
         }
         return;
       }
+      console.log(`[CaretTracker] CLI output: ${stdout.trim()}`);
       resolve(stdout.trim());
     });
   });

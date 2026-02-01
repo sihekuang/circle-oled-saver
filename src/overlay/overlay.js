@@ -44,25 +44,45 @@ window.addEventListener('resize', resize);
 resize();
 
 // Track cursor position for proximity fade
+let lastCursorLogTime = 0;
 document.addEventListener('mousemove', (e) => {
   cursorX = e.clientX;
   cursorY = e.clientY;
+
+  // Throttled logging (every 2 seconds max)
+  const now = Date.now();
+  if (now - lastCursorLogTime > 2000) {
+    console.log(`[ProximityFade] Cursor at (${cursorX}, ${cursorY})`);
+    lastCursorLogTime = now;
+  }
 });
 
 // Poll for caret position (can't get events for this)
+let lastCaretLogTime = 0;
 async function pollCaretPosition() {
   try {
     const pos = await window.oledSaver.getCaretPosition();
     if (pos) {
       caretX = pos.x;
       caretY = pos.y;
+
+      // Throttled logging (every 2 seconds max)
+      const now = Date.now();
+      if (now - lastCaretLogTime > 2000) {
+        console.log(`[ProximityFade] Caret at (${Math.round(caretX)}, ${Math.round(caretY)})`);
+        lastCaretLogTime = now;
+      }
     } else {
       // No caret available, move off-screen
+      if (caretX !== -1000) {
+        console.log('[ProximityFade] Caret not available');
+      }
       caretX = -1000;
       caretY = -1000;
     }
   } catch (err) {
     // Silently fail - caret tracking is optional
+    console.error('[ProximityFade] Caret polling error:', err.message);
   }
 }
 
