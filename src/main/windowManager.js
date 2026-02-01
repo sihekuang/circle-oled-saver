@@ -117,6 +117,17 @@ class WindowManager {
       config.setTheme(themeId);
     });
 
+    ipcMain.removeHandler('get-proximity-fade-enabled');
+    ipcMain.removeHandler('get-proximity-fade-radius');
+
+    ipcMain.handle('get-proximity-fade-enabled', () => {
+      return config.isProximityFadeEnabled();
+    });
+
+    ipcMain.handle('get-proximity-fade-radius', () => {
+      return config.getProximityFadeRadius();
+    });
+
     ipcMain.handle('get-system-info', async () => {
       try {
         // Get accurate system-wide CPU load (current load across all cores)
@@ -234,7 +245,9 @@ class WindowManager {
         content: config.getContentSettings(),
         theme: config.getTheme(),
         alwaysOnMode: config.isAlwaysOnMode(),
-        alwaysOnHotkey: config.getAlwaysOnHotkey()
+        alwaysOnHotkey: config.getAlwaysOnHotkey(),
+        proximityFadeEnabled: config.isProximityFadeEnabled(),
+        proximityFadeRadius: config.getProximityFadeRadius()
       };
     });
 
@@ -269,6 +282,12 @@ class WindowManager {
       }
       if (settings.alwaysOnMode !== undefined) {
         config.setAlwaysOnMode(settings.alwaysOnMode);
+      }
+      if (settings.proximityFadeEnabled !== undefined) {
+        config.setProximityFadeEnabled(settings.proximityFadeEnabled);
+      }
+      if (settings.proximityFadeRadius !== undefined) {
+        config.setProximityFadeRadius(settings.proximityFadeRadius);
       }
       // Notify overlays of settings changes
       this.notifyOverlaysSettingsChanged(settings);
