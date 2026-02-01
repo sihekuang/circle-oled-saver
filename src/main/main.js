@@ -5,6 +5,7 @@ const idleMonitor = require('./idleMonitor');
 const trayManager = require('./trayManager');
 const windowManager = require('./windowManager');
 const toastManager = require('./toastManager');
+const caretTracker = require('./caretTracker');
 
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock();
@@ -92,9 +93,25 @@ app.on('ready', async () => {
     promptAutoStart();
   }
 
+  // Check/request accessibility permission for caret tracking (macOS only)
+  if (process.platform === 'darwin' && config.isProximityFadeEnabled()) {
+    checkAccessibilityPermission();
+  }
+
   // Listen for display changes to refresh overlays in Always On mode
   setupDisplayChangeListeners();
 });
+
+async function checkAccessibilityPermission() {
+  const hasPermission = await caretTracker.checkAccessibilityPermission();
+  if (!hasPermission) {
+    console.log('[Main] Requesting accessibility permission for caret tracking...');
+    // This will show the macOS system dialog
+    await caretTracker.requestAccessibilityPermission();
+  } else {
+    console.log('[Main] Accessibility permission already granted');
+  }
+}
 
 async function promptAutoStart() {
   const iconPath = path.join(__dirname, '../../assets/icon.png');
