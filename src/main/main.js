@@ -103,13 +103,20 @@ app.on('ready', async () => {
 });
 
 async function checkAccessibilityPermission() {
-  const hasPermission = await caretTracker.checkAccessibilityPermission();
-  if (!hasPermission) {
-    console.log('[Main] Requesting accessibility permission for caret tracking...');
-    // This will show the macOS system dialog
-    await caretTracker.requestAccessibilityPermission();
-  } else {
-    console.log('[Main] Accessibility permission already granted');
+  try {
+    console.log('[Main] Checking accessibility permission...');
+    const hasPermission = await caretTracker.checkAccessibilityPermission();
+    console.log('[Main] Has accessibility permission:', hasPermission);
+    if (!hasPermission) {
+      console.log('[Main] Requesting accessibility permission for caret tracking...');
+      // This will show the macOS system dialog
+      const result = await caretTracker.requestAccessibilityPermission();
+      console.log('[Main] Permission request result:', result);
+    } else {
+      console.log('[Main] Accessibility permission already granted');
+    }
+  } catch (err) {
+    console.error('[Main] Error checking accessibility permission:', err);
   }
 }
 

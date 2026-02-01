@@ -1,6 +1,6 @@
 const { execFile } = require('child_process');
 const path = require('path');
-const { app } = require('electron');
+const { app, systemPreferences } = require('electron');
 
 // Path to the caret-tracker binary
 function getCaretTrackerPath() {
@@ -33,19 +33,14 @@ function execCaretTracker(command) {
   });
 }
 
-// Check if we have accessibility permission
+// Check if we have accessibility permission (uses Electron's built-in API)
 async function checkAccessibilityPermission() {
   if (process.platform !== 'darwin') {
     return false;
   }
 
-  try {
-    const result = await execCaretTracker('check');
-    return result === 'authorized';
-  } catch (err) {
-    console.error('[CaretTracker] Error checking permission:', err.message);
-    return false;
-  }
+  // Use Electron's API - this checks permission for the Electron app itself
+  return systemPreferences.isTrustedAccessibilityClient(false);
 }
 
 // Request accessibility permission (shows system dialog)
@@ -54,13 +49,8 @@ async function requestAccessibilityPermission() {
     return false;
   }
 
-  try {
-    const result = await execCaretTracker('request');
-    return result === 'authorized';
-  } catch (err) {
-    console.error('[CaretTracker] Error requesting permission:', err.message);
-    return false;
-  }
+  // Use Electron's API with prompt=true to show the system dialog
+  return systemPreferences.isTrustedAccessibilityClient(true);
 }
 
 // Get the current caret position
