@@ -20,6 +20,7 @@ A cross-platform OLED screensaver designed for both productivity users and gener
 - **Always-On Mode** - Toggle with a global hotkey to keep the screensaver running
 - **Multi-Monitor Support** - Works across all connected displays
 - **System Tray App** - Runs quietly in your menu bar/system tray
+- **Proximity Fade** - Circle becomes transparent when near your cursor or text caret, so it won't distract you while working
 
 ## Installation
 
@@ -78,6 +79,42 @@ npm run build:linux
 
 See [Content Providers Documentation](docs/content-providers.md) for details on adding custom providers.
 
+## Proximity Fade
+
+The circle automatically fades when it gets close to your cursor or text caret, preventing distraction while you work.
+
+### Settings
+
+- **Fade near cursor** - Toggle the feature on/off
+- **Fade distance** - How far from the circle edge the fade begins (50-500px)
+
+### Platform Support
+
+| Platform | Cursor Tracking | Caret Tracking |
+|----------|----------------|----------------|
+| macOS | ✅ Full support | ✅ Native apps only |
+| Windows | ✅ Full support | ❌ Not yet implemented |
+| Linux | ✅ Full support | ❌ Not yet implemented |
+
+### macOS Caret Tracking Limitations
+
+Caret (text cursor) tracking uses macOS Accessibility APIs and requires permission:
+
+1. On first launch, you'll be prompted to grant Accessibility permission
+2. Go to **System Settings → Privacy & Security → Accessibility**
+3. Enable the toggle for Circle
+
+**Known limitations:**
+
+| App Type | Status | Notes |
+|----------|--------|-------|
+| Native macOS apps | ✅ Works | TextEdit, Notes, Terminal, Xcode, etc. |
+| Electron apps | ⚠️ Limited | VS Code, Slack - may report incorrect position |
+| Web browsers | ❌ No support | Caret inside web content not accessible |
+| Java/Qt apps | ⚠️ Varies | Depends on accessibility implementation |
+
+When caret tracking isn't available, the feature falls back to cursor-only tracking, which works in all applications.
+
 ## Development
 
 ```bash
@@ -95,9 +132,12 @@ src/
 ├── main/           # Electron main process
 │   ├── main.js     # App entry point
 │   ├── config.js   # Settings management
+│   ├── caretTracker.js  # Caret position tracking
 │   ├── idleMonitor.js
 │   ├── trayManager.js
 │   └── windowManager.js
+├── native/         # Native addons
+│   └── caret_tracker.mm  # macOS caret tracking (Obj-C++)
 ├── overlay/        # Screensaver overlay
 │   ├── providers/  # Content providers
 │   ├── themes/     # Visual themes
