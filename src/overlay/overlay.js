@@ -139,33 +139,43 @@ class BouncingBall {
       return 1.0;
     }
 
-    // Calculate distance from ball center to cursor
+    // Calculate distance from ball CENTER to cursor
     const dxCursor = this.x - cursorX;
     const dyCursor = this.y - cursorY;
-    const cursorDistance = Math.sqrt(dxCursor * dxCursor + dyCursor * dyCursor);
+    const cursorDistanceFromCenter = Math.sqrt(dxCursor * dxCursor + dyCursor * dyCursor);
 
-    // Calculate distance from ball center to caret
+    // Calculate distance from ball CENTER to caret
     const dxCaret = this.x - caretX;
     const dyCaret = this.y - caretY;
-    const caretDistance = Math.sqrt(dxCaret * dxCaret + dyCaret * dyCaret);
+    const caretDistanceFromCenter = Math.sqrt(dxCaret * dxCaret + dyCaret * dyCaret);
 
-    // Use the closest point (cursor or caret)
-    const distance = Math.min(cursorDistance, caretDistance);
-    const source = cursorDistance <= caretDistance ? 'cursor' : 'caret';
+    // Use the closest point (cursor or caret) - distance from CENTER
+    const distanceFromCenter = Math.min(cursorDistanceFromCenter, caretDistanceFromCenter);
+    const source = cursorDistanceFromCenter <= caretDistanceFromCenter ? 'cursor' : 'caret';
 
-    // If outside fade radius, full opacity
-    if (distance >= proximityFadeRadius) {
+    // Convert to distance from circle EDGE (subtract radius)
+    // Negative means cursor/caret is inside the circle
+    const distanceFromEdge = distanceFromCenter - this.radius;
+
+    // If outside fade radius from edge, full opacity
+    if (distanceFromEdge >= proximityFadeRadius) {
       return 1.0;
     }
 
-    // Linear interpolation: closer = more transparent
-    const opacity = distance / proximityFadeRadius;
+    // If at or inside the circle edge, fully transparent
+    if (distanceFromEdge <= 0) {
+      return 0.0;
+    }
+
+    // Quadratic fade for more pronounced effect (faster fade as it gets closer)
+    const linearOpacity = distanceFromEdge / proximityFadeRadius;
+    const opacity = linearOpacity * linearOpacity; // Quadratic - more aggressive fade
 
     // Log when in fade zone (throttled)
     const now = Date.now();
     if (now - lastProximityLogTime > 500) {
       if (opacity < 1.0) {
-        console.log(`[ProximityFade] Circle in fade zone (${source}) - distance: ${Math.round(distance)}px, opacity: ${opacity.toFixed(2)}`);
+        console.log(`[ProximityFade] Circle in fade zone (${source}) - edge distance: ${Math.round(distanceFromEdge)}px, opacity: ${opacity.toFixed(2)}`);
       }
       lastProximityLogTime = now;
     }

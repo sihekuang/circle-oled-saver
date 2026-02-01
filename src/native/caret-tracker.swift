@@ -18,16 +18,28 @@ func getCaretPosition() -> CaretResult {
     // Get the system-wide accessibility element
     let systemWide = AXUIElementCreateSystemWide()
 
-    // Get the focused UI element
+    // First, get the focused application
+    var focusedApp: CFTypeRef?
+    let appError = AXUIElementCopyAttributeValue(
+        systemWide,
+        kAXFocusedApplicationAttribute as CFString,
+        &focusedApp
+    )
+
+    guard appError == .success, let app = focusedApp else {
+        return CaretResult(success: false, position: nil, error: "No focused application")
+    }
+
+    // Then get the focused UI element within that application
     var focusedElement: CFTypeRef?
     let focusError = AXUIElementCopyAttributeValue(
-        systemWide,
+        app as! AXUIElement,
         kAXFocusedUIElementAttribute as CFString,
         &focusedElement
     )
 
     guard focusError == .success, let element = focusedElement else {
-        return CaretResult(success: false, position: nil, error: "No focused element")
+        return CaretResult(success: false, position: nil, error: "No focused element in app")
     }
 
     let axElement = element as! AXUIElement

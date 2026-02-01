@@ -1,43 +1,35 @@
-const { execFile } = require('child_process');
 const path = require('path');
-const { app, systemPreferences } = require('electron');
+const { systemPreferences } = require('electron');
 
-// Path to the caret-tracker binary
-function getCaretTrackerPath() {
-  if (app.isPackaged) {
-    // In packaged app, binary is in Resources
-    return path.join(process.resourcesPath, 'caret-tracker');
-  } else {
-    // In development, binary is in src/native
-    return path.join(__dirname, '../native/caret-tracker');
+let nativeAddon = null;
+
+// Try to load the native addon
+function loadNativeAddon() {
+  if (nativeAddon !== null) {
+    return nativeAddon;
+  }
+
+  if (process.platform !== 'darwin') {
+    nativeAddon = false;
+    return false;
+  }
+
+  try {
+    // Try to load the compiled native addon
+    const addonPath = path.join(__dirname, '../native/build/Release/caret_tracker.node');
+    nativeAddon = require(addonPath);
+    console.log('[CaretTracker] Native addon loaded successfully');
+    return nativeAddon;
+  } catch (err) {
+    console.warn('[CaretTracker] Failed to load native addon:', err.message);
+    console.warn('[CaretTracker] Run "npm run build:native" to compile it');
+    nativeAddon = false;
+    return false;
   }
 }
 
-// Execute the caret-tracker CLI
-function execCaretTracker(command) {
-  return new Promise((resolve, reject) => {
-    const binaryPath = getCaretTrackerPath();
-    console.log(`[CaretTracker] Executing: ${binaryPath} ${command}`);
-
-    execFile(binaryPath, [command], { timeout: 1000 }, (error, stdout, stderr) => {
-      if (error) {
-        // Binary might not exist or not be executable
-        if (error.code === 'ENOENT') {
-          reject(new Error('Caret tracker binary not found. Run: npm run build:native'));
-        } else {
-          console.error(`[CaretTracker] CLI error:`, error.message);
-          reject(error);
-        }
-        return;
-      }
-      console.log(`[CaretTracker] CLI output: ${stdout.trim()}`);
-      resolve(stdout.trim());
-    });
-  });
-}
-
 // Check if we have accessibility permission (uses Electron's built-in API)
-async function checkAccessibilityPermission() {
+function checkAccessibilityPermission() {
   if (process.platform !== 'darwin') {
     return false;
   }
@@ -47,7 +39,7 @@ async function checkAccessibilityPermission() {
 }
 
 // Request accessibility permission (shows system dialog)
-async function requestAccessibilityPermission() {
+function requestAccessibilityPermission() {
   if (process.platform !== 'darwin') {
     return false;
   }
@@ -56,28 +48,30 @@ async function requestAccessibilityPermission() {
   return systemPreferences.isTrustedAccessibilityClient(true);
 }
 
-// Get the current caret position
+// Get the current caret position using native addon
 // Returns { x, y, width, height } or null if unavailable
-async function getCaretPosition() {
+let lastCaretLog = 0;
+function getCaretPosition() {
   if (process.platform !== 'darwin') {
     return null; // Windows implementation will be added later
   }
 
-  try {
-    const output = await execCaretTracker('get');
-    const result = JSON.parse(output);
+  const addon = loadNativeAddon();
+  if (!addon) {
+    return null;
+  }
 
-    if (result.success && result.position) {
-      return result.position;
-    } else {
-      // Don't log every time - caret might just not be visible
-      return null;
+  try {
+    const result = addon.getCaretPosition();
+    // Throttle logging to every 2 seconds
+    const now = Date.now();
+    if (result && now - lastCaretLog > 2000) {
+      console.log(`[CaretTracker] Caret at (${Math.round(result.x)}, ${Math.round(result.y)})`);
+      lastCaretLog = now;
     }
+    return result;
   } catch (err) {
-    // Only log unexpected errors
-    if (!err.message.includes('not found')) {
-      console.error('[CaretTracker] Error:', err.message);
-    }
+    console.error('[CaretTracker] Error getting caret position:', err.message);
     return null;
   }
 }
