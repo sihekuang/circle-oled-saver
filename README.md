@@ -1,6 +1,6 @@
 # Circle
 
-A cross-platform OLED screensaver that displays a bouncing circle with rotating content to prevent burn-in.
+A cross-platform OLED screensaver designed for both productivity users and general use. Displays a bouncing circle with rotating content to prevent burn-in whether you're idling, working, or away from your desk.
 
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
