@@ -9,6 +9,13 @@ let ballOpacityPercentage = 100; // Default value
 let ballSpeedPercentage = 100; // Default value
 let lastFrameTime = performance.now();
 
+// Proximity fade settings
+let proximityFadeEnabled = true;
+let proximityFadeRadius = 150;
+let cursorX = -1000; // Off-screen initially
+let cursorY = -1000;
+let lastCursorLogTime = 0;
+
 // Store logical dimensions (CSS pixels) for game logic
 let logicalWidth = window.innerWidth;
 let logicalHeight = window.innerHeight;
@@ -32,6 +39,19 @@ function resize() {
 
 window.addEventListener('resize', resize);
 resize();
+
+// Track cursor position for proximity fade
+document.addEventListener('mousemove', (e) => {
+  cursorX = e.clientX;
+  cursorY = e.clientY;
+
+  // Throttled logging (every 2 seconds max)
+  const now = Date.now();
+  if (now - lastCursorLogTime > 2000) {
+    console.log(`[ProximityFade] Cursor at (${cursorX}, ${cursorY})`);
+    lastCursorLogTime = now;
+  }
+});
 
 class BouncingBall {
   constructor() {
@@ -64,6 +84,36 @@ class BouncingBall {
       this.speedX *= scale;
       this.speedY *= scale;
     }
+  }
+
+  calculateProximityOpacity() {
+    if (!proximityFadeEnabled) {
+      return 1.0;
+    }
+
+    // Calculate distance from ball center to cursor
+    const dx = this.x - cursorX;
+    const dy = this.y - cursorY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // If outside fade radius, full opacity
+    if (distance >= proximityFadeRadius) {
+      return 1.0;
+    }
+
+    // Linear interpolation: closer = more transparent
+    const opacity = distance / proximityFadeRadius;
+
+    // Log when in fade zone (throttled)
+    const now = Date.now();
+    if (now - lastCursorLogTime > 500) {
+      if (opacity < 1.0) {
+        console.log(`[ProximityFade] Circle in fade zone - distance: ${Math.round(distance)}px, opacity: ${opacity.toFixed(2)}`);
+      }
+      lastCursorLogTime = now;
+    }
+
+    return opacity;
   }
 
   update() {
@@ -173,7 +223,7 @@ class BouncingBall {
           y: this.y,
           radius: this.radius,
           hue: this.hue,
-          opacity: ballOpacityPercentage / 100
+          opacity: (ballOpacityPercentage / 100) * this.calculateProximityOpacity()
         },
         performance.now(),
         content
@@ -190,7 +240,7 @@ class BouncingBall {
 
   drawGradient() {
     // Original gradient drawing code
-    const opacity = ballOpacityPercentage / 100;
+    const opacity = (ballOpacityPercentage / 100) * this.calculateProximityOpacity();
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
       this.y - this.radius * 0.3,
@@ -209,7 +259,7 @@ class BouncingBall {
   }
 
   drawWithContent(content) {
-    const opacity = ballOpacityPercentage / 100;
+    const opacity = (ballOpacityPercentage / 100) * this.calculateProximityOpacity();
 
     // Draw circle background
     ctx.beginPath();
@@ -372,6 +422,10 @@ async function init() {
     ballSpeedPercentage = await window.oledSaver.getBallSpeed();
     console.log('[Overlay] Ball settings loaded:', { ballSizeMode, ballSizeValue, ballOpacityPercentage, ballSpeedPercentage });
 
+    proximityFadeEnabled = await window.oledSaver.getProximityFadeEnabled();
+    proximityFadeRadius = await window.oledSaver.getProximityFadeRadius();
+    console.log('[Overlay] Proximity fade settings loaded:', { proximityFadeEnabled, proximityFadeRadius });
+
     // Initialize theme provider
     const themeId = await window.oledSaver.getTheme();
     const ThemeClass = {
@@ -465,5 +519,13 @@ window.oledSaver.onSettingsChanged((settings) => {
   // Update ball size if it exists
   if (ball) {
     ball.updateSize();
+  }
+  if (settings.proximityFadeEnabled !== undefined) {
+    proximityFadeEnabled = settings.proximityFadeEnabled;
+    console.log('[Overlay] Proximity fade enabled:', proximityFadeEnabled);
+  }
+  if (settings.proximityFadeRadius !== undefined) {
+    proximityFadeRadius = settings.proximityFadeRadius;
+    console.log('[Overlay] Proximity fade radius:', proximityFadeRadius);
   }
 });
