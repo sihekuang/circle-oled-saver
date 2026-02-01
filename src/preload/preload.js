@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('oledSaver', {
   getBallSpeed: () => ipcRenderer.invoke('get-ball-speed'),
   getProximityFadeEnabled: () => ipcRenderer.invoke('get-proximity-fade-enabled'),
   getProximityFadeRadius: () => ipcRenderer.invoke('get-proximity-fade-radius'),
+  getCaretPosition: () => ipcRenderer.invoke('get-caret-position'),
+  checkAccessibilityPermission: () => ipcRenderer.invoke('check-accessibility-permission'),
+  requestAccessibilityPermission: () => ipcRenderer.invoke('request-accessibility-permission'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
 
   // Settings APIs

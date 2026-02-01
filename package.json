@@ -6,8 +6,9 @@
   "scripts": {
     "start": "electron .",
     "generate-icons": "node scripts/generate-icons.js",
-    "build": "electron-builder",
-    "build:mac": "electron-builder --mac",
+    "build:native": "cd src/native && ./build.sh",
+    "build": "npm run build:native && electron-builder",
+    "build:mac": "npm run build:native && electron-builder --mac",
     "build:win": "electron-builder --win",
     "build:linux": "electron-builder --linux"
   },
@@ -29,8 +30,15 @@
     },
     "files": [
       "src/**/*",
+      "!src/native/**/*",
       "assets/trayTemplate.png",
       "assets/trayTemplate@2x.png"
+    ],
+    "extraResources": [
+      {
+        "from": "src/native/caret-tracker",
+        "to": "caret-tracker"
+      }
     ]
   },
   "keywords": [
@@ -51,6 +59,8 @@
   },
   "dependencies": {
     "electron-store": "^8.2.0",
+    "node-addon-api": "^8.5.0",
+    "node-mac-permissions": "^2.5.0",
     "systeminformation": "^5.30.5"
   }
 }
