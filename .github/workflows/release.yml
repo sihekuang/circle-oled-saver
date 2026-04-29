@@ -61,7 +61,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx electron-builder --win nsis --x64 \
+          # --publish never: electron-builder otherwise auto-detects the v* tag
+          # and tries to publish the release itself, which fails without GH_TOKEN.
+          # We let softprops/action-gh-release handle publishing in a later step.
+          npx electron-builder --win nsis --x64 --publish never \
             --config.extraMetadata.version="${{ steps.tag.outputs.version }}" \
             --config.nsis.artifactName='Circle-Setup.exe'
 
