@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "generate-icons": "node scripts/generate-icons.js",
+    "build:native": "cd src/native && node-gyp rebuild",
     "build": "electron-builder",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
@@ -29,6 +30,13 @@
     },
     "files": [
       "src/**/*",
+      "!src/native/*.swift",
+      "!src/native/*.sh",
+      "!src/native/*.gyp",
+      "!src/native/*.mm",
+      "!src/native/caret-tracker",
+      "!src/native/build/Release/obj.target",
+      "!src/native/build/Release/.deps",
       "assets/trayTemplate.png",
       "assets/trayTemplate@2x.png"
     ]
@@ -51,6 +59,8 @@
   },
   "dependencies": {
     "electron-store": "^8.2.0",
+    "node-addon-api": "^8.5.0",
+    "node-mac-permissions": "^2.5.0",
     "systeminformation": "^5.30.5"
   }
 }

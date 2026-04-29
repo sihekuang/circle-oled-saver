@@ -89,6 +89,20 @@
       </section>
 
       <section class="setting-group">
+        <h3 style="margin-top: 0;">Proximity Fade</h3>
+        <label class="toggle-label" style="margin-bottom: 16px;">
+          <span>Fade near cursor</span>
+          <input type="checkbox" id="proximity-fade-enabled" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="proximity-fade-radius">Fade distance</label>
+        <div class="timeout-input">
+          <input type="range" id="proximity-fade-radius" min="50" max="500" step="10" value="150">
+          <input type="number" id="proximity-fade-radius-value" min="50" max="500" step="10" value="150"> px
+        </div>
+      </section>
+
+      <section class="setting-group">
         <label class="toggle-label">
           <span>Start at login</span>
           <input type="checkbox" id="launch-at-login">

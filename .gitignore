@@ -31,6 +31,12 @@ yarn-error.log*
 # Electron-builder output
 release/
 
+# Native addon build artifacts (keep .node binaries)
+src/native/build/*
+!src/native/build/Release/
+src/native/build/Release/*
+!src/native/build/Release/*.node
+
 # Package manager lock files (optional - uncomment if you want to ignore)
 # package-lock.json
 # yarn.lock

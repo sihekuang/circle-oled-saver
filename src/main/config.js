@@ -76,6 +76,16 @@ const schema = {
   alwaysOnHotkey: {
     type: 'string',
     default: 'CommandOrControl+Alt+O'
+  },
+  proximityFadeEnabled: {
+    type: 'boolean',
+    default: true
+  },
+  proximityFadeRadius: {
+    type: 'number',
+    default: 150,
+    minimum: 50,
+    maximum: 500
   }
 };
 
@@ -202,5 +212,21 @@ module.exports = {
 
   setAlwaysOnHotkey(accelerator) {
     store.set('alwaysOnHotkey', accelerator);
+  },
+
+  isProximityFadeEnabled() {
+    return store.get('proximityFadeEnabled');
+  },
+
+  setProximityFadeEnabled(enabled) {
+    store.set('proximityFadeEnabled', enabled);
+  },
+
+  getProximityFadeRadius() {
+    return store.get('proximityFadeRadius');
+  },
+
+  setProximityFadeRadius(pixels) {
+    store.set('proximityFadeRadius', pixels);
   }
 };

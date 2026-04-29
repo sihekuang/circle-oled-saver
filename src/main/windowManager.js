@@ -2,6 +2,7 @@ const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 const config = require('./config');
 const si = require('systeminformation');
+const caretTracker = require('./caretTracker');
 
 class WindowManager {
   constructor() {
@@ -115,6 +116,33 @@ class WindowManager {
 
     ipcMain.handle('save-theme', (event, themeId) => {
       config.setTheme(themeId);
+    });
+
+    ipcMain.removeHandler('get-proximity-fade-enabled');
+    ipcMain.removeHandler('get-proximity-fade-radius');
+
+    ipcMain.handle('get-proximity-fade-enabled', () => {
+      return config.isProximityFadeEnabled();
+    });
+
+    ipcMain.handle('get-proximity-fade-radius', () => {
+      return config.getProximityFadeRadius();
+    });
+
+    ipcMain.removeHandler('get-caret-position');
+    ipcMain.removeHandler('check-accessibility-permission');
+    ipcMain.removeHandler('request-accessibility-permission');
+
+    ipcMain.handle('get-caret-position', async () => {
+      return await caretTracker.getCaretPosition();
+    });
+
+    ipcMain.handle('check-accessibility-permission', async () => {
+      return await caretTracker.checkAccessibilityPermission();
+    });
+
+    ipcMain.handle('request-accessibility-permission', async () => {
+      return await caretTracker.requestAccessibilityPermission();
     });
 
     ipcMain.handle('get-system-info', async () => {
@@ -234,7 +262,9 @@ class WindowManager {
         content: config.getContentSettings(),
         theme: config.getTheme(),
         alwaysOnMode: config.isAlwaysOnMode(),
-        alwaysOnHotkey: config.getAlwaysOnHotkey()
+        alwaysOnHotkey: config.getAlwaysOnHotkey(),
+        proximityFadeEnabled: config.isProximityFadeEnabled(),
+        proximityFadeRadius: config.getProximityFadeRadius()
       };
     });
 
@@ -269,6 +299,12 @@ class WindowManager {
       }
       if (settings.alwaysOnMode !== undefined) {
         config.setAlwaysOnMode(settings.alwaysOnMode);
+      }
+      if (settings.proximityFadeEnabled !== undefined) {
+        config.setProximityFadeEnabled(settings.proximityFadeEnabled);
+      }
+      if (settings.proximityFadeRadius !== undefined) {
+        config.setProximityFadeRadius(settings.proximityFadeRadius);
       }
       // Notify overlays of settings changes
       this.notifyOverlaysSettingsChanged(settings);

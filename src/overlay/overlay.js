@@ -9,6 +9,16 @@ let ballOpacityPercentage = 100; // Default value
 let ballSpeedPercentage = 100; // Default value
 let lastFrameTime = performance.now();
 
+// Proximity fade settings
+let proximityFadeEnabled = true;
+let proximityFadeRadius = 150;
+let cursorX = -1000; // Off-screen initially
+let cursorY = -1000;
+let caretX = -1000; // Off-screen initially
+let caretY = -1000;
+let lastProximityLogTime = 0;
+let caretPollingInterval = null;
+
 // Store logical dimensions (CSS pixels) for game logic
 let logicalWidth = window.innerWidth;
 let logicalHeight = window.innerHeight;
@@ -32,6 +42,64 @@ function resize() {
 
 window.addEventListener('resize', resize);
 resize();
+
+// Track cursor position for proximity fade
+let lastCursorLogTime = 0;
+document.addEventListener('mousemove', (e) => {
+  cursorX = e.clientX;
+  cursorY = e.clientY;
+
+  // Throttled logging (every 2 seconds max)
+  const now = Date.now();
+  if (now - lastCursorLogTime > 2000) {
+    console.log(`[ProximityFade] Cursor at (${cursorX}, ${cursorY})`);
+    lastCursorLogTime = now;
+  }
+});
+
+// Poll for caret position (can't get events for this)
+let lastCaretLogTime = 0;
+async function pollCaretPosition() {
+  try {
+    const pos = await window.oledSaver.getCaretPosition();
+    if (pos) {
+      caretX = pos.x;
+      caretY = pos.y;
+
+      // Throttled logging (every 2 seconds max)
+      const now = Date.now();
+      if (now - lastCaretLogTime > 2000) {
+        console.log(`[ProximityFade] Caret at (${Math.round(caretX)}, ${Math.round(caretY)})`);
+        lastCaretLogTime = now;
+      }
+    } else {
+      // No caret available, move off-screen
+      if (caretX !== -1000) {
+        console.log('[ProximityFade] Caret not available');
+      }
+      caretX = -1000;
+      caretY = -1000;
+    }
+  } catch (err) {
+    // Silently fail - caret tracking is optional
+    console.error('[ProximityFade] Caret polling error:', err.message);
+  }
+}
+
+function startCaretPolling() {
+  if (caretPollingInterval) return;
+  // Poll every 100ms for responsive tracking
+  caretPollingInterval = setInterval(pollCaretPosition, 100);
+  // Initial poll
+  pollCaretPosition();
+}
+
+function stopCaretPolling() {
+  if (caretPollingInterval) {
+    clearInterval(caretPollingInterval);
+    caretPollingInterval = null;
+  }
+}
 
 class BouncingBall {
   constructor() {
@@ -64,6 +132,55 @@ class BouncingBall {
       this.speedX *= scale;
       this.speedY *= scale;
     }
+  }
+
+  calculateProximityOpacity() {
+    if (!proximityFadeEnabled) {
+      return 1.0;
+    }
+
+    // Calculate distance from ball CENTER to cursor
+    const dxCursor = this.x - cursorX;
+    const dyCursor = this.y - cursorY;
+    const cursorDistanceFromCenter = Math.sqrt(dxCursor * dxCursor + dyCursor * dyCursor);
+
+    // Calculate distance from ball CENTER to caret
+    const dxCaret = this.x - caretX;
+    const dyCaret = this.y - caretY;
+    const caretDistanceFromCenter = Math.sqrt(dxCaret * dxCaret + dyCaret * dyCaret);
+
+    // Use the closest point (cursor or caret) - distance from CENTER
+    const distanceFromCenter = Math.min(cursorDistanceFromCenter, caretDistanceFromCenter);
+    const source = cursorDistanceFromCenter <= caretDistanceFromCenter ? 'cursor' : 'caret';
+
+    // Convert to distance from circle EDGE (subtract radius)
+    // Negative means cursor/caret is inside the circle
+    const distanceFromEdge = distanceFromCenter - this.radius;
+
+    // If outside fade radius from edge, full opacity
+    if (distanceFromEdge >= proximityFadeRadius) {
+      return 1.0;
+    }
+
+    // If at or inside the circle edge, fully transparent
+    if (distanceFromEdge <= 0) {
+      return 0.0;
+    }
+
+    // Quadratic fade for more pronounced effect (faster fade as it gets closer)
+    const linearOpacity = distanceFromEdge / proximityFadeRadius;
+    const opacity = linearOpacity * linearOpacity; // Quadratic - more aggressive fade
+
+    // Log when in fade zone (throttled)
+    const now = Date.now();
+    if (now - lastProximityLogTime > 500) {
+      if (opacity < 1.0) {
+        console.log(`[ProximityFade] Circle in fade zone (${source}) - edge distance: ${Math.round(distanceFromEdge)}px, opacity: ${opacity.toFixed(2)}`);
+      }
+      lastProximityLogTime = now;
+    }
+
+    return opacity;
   }
 
   update() {
@@ -173,7 +290,7 @@ class BouncingBall {
           y: this.y,
           radius: this.radius,
           hue: this.hue,
-          opacity: ballOpacityPercentage / 100
+          opacity: (ballOpacityPercentage / 100) * this.calculateProximityOpacity()
         },
         performance.now(),
         content
@@ -190,7 +307,7 @@ class BouncingBall {
 
   drawGradient() {
     // Original gradient drawing code
-    const opacity = ballOpacityPercentage / 100;
+    const opacity = (ballOpacityPercentage / 100) * this.calculateProximityOpacity();
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
       this.y - this.radius * 0.3,
@@ -209,7 +326,7 @@ class BouncingBall {
   }
 
   drawWithContent(content) {
-    const opacity = ballOpacityPercentage / 100;
+    const opacity = (ballOpacityPercentage / 100) * this.calculateProximityOpacity();
 
     // Draw circle background
     ctx.beginPath();
@@ -372,6 +489,16 @@ async function init() {
     ballSpeedPercentage = await window.oledSaver.getBallSpeed();
     console.log('[Overlay] Ball settings loaded:', { ballSizeMode, ballSizeValue, ballOpacityPercentage, ballSpeedPercentage });
 
+    proximityFadeEnabled = await window.oledSaver.getProximityFadeEnabled();
+    proximityFadeRadius = await window.oledSaver.getProximityFadeRadius();
+    console.log('[Overlay] Proximity fade settings loaded:', { proximityFadeEnabled, proximityFadeRadius });
+
+    // Start caret position polling for proximity fade
+    if (proximityFadeEnabled) {
+      startCaretPolling();
+      console.log('[Overlay] Caret polling started');
+    }
+
     // Initialize theme provider
     const themeId = await window.oledSaver.getTheme();
     const ThemeClass = {
@@ -425,6 +552,8 @@ window.oledSaver.onFadeOut(() => {
   if (window.contentRotator) {
     window.contentRotator.destroy();
   }
+  // Stop caret polling
+  stopCaretPolling();
 });
 
 // Listen for realtime settings changes
@@ -465,5 +594,19 @@ window.oledSaver.onSettingsChanged((settings) => {
   // Update ball size if it exists
   if (ball) {
     ball.updateSize();
+  }
+  if (settings.proximityFadeEnabled !== undefined) {
+    proximityFadeEnabled = settings.proximityFadeEnabled;
+    console.log('[Overlay] Proximity fade enabled:', proximityFadeEnabled);
+    // Start/stop caret polling based on setting
+    if (proximityFadeEnabled) {
+      startCaretPolling();
+    } else {
+      stopCaretPolling();
+    }
+  }
+  if (settings.proximityFadeRadius !== undefined) {
+    proximityFadeRadius = settings.proximityFadeRadius;
+    console.log('[Overlay] Proximity fade radius:', proximityFadeRadius);
   }
 });
