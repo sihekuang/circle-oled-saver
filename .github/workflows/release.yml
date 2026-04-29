@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.0.0). Required for manual runs.'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Windows installer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag and version
+        id: tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' must match vMAJOR.MINOR.PATCH (e.g. v1.0.0)"
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $TAG"
+          echo "Version: $VERSION"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows installer (x64, unsigned)
+        env:
+          # We don't have a Windows code-signing certificate. Disable
+          # auto-discovery so electron-builder doesn't error out looking
+          # for one. Output is unsigned — SmartScreen will warn on first
+          # launch, users can click "More info" -> "Run anyway".
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx electron-builder --win nsis --x64 \
+            --config.extraMetadata.version="${{ steps.tag.outputs.version }}" \
+            --config.nsis.artifactName='Circle-Setup.exe'
+
+      - name: Verify embedded version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "dist/Circle-Setup.exe" ]; then
+            echo "::error::dist/Circle-Setup.exe was not produced"
+            ls -la dist/
+            exit 1
+          fi
+          ls -lh dist/Circle-Setup.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          files: dist/Circle-Setup.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          body: |
+            **Circle for Windows** (Electron build, x64).
+
+            ### Install
+            1. Download `Circle-Setup.exe` and run it.
+            2. Windows SmartScreen may show *"Windows protected your PC"* — click **More info** → **Run anyway**. The build is unsigned (no Windows code-signing certificate).
+            3. After install, launch Circle from the Start menu. The icon appears in the system tray.
+
+            On macOS, install the [native build](https://github.com/sihekuang/circle-oled-saver-macos/releases/latest) instead — it has lower CPU and battery impact than this Electron version.
